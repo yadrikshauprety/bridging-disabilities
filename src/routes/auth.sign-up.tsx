@@ -1,0 +1,62 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { useA11y } from "@/lib/accessibility-context";
+import { AuthShell, Field } from "./auth.sign-in";
+
+export const Route = createFileRoute("/auth/sign-up")({
+  head: () => ({ meta: [{ title: "Sign Up — DisabilityBridge" }] }),
+  component: SignUp,
+});
+
+function SignUp() {
+  const a11y = useA11y();
+  const navigate = useNavigate();
+  const [role, setRole] = useState<"user" | "employer">("user");
+
+  function fieldHover(t: string) { return () => a11y.speak(t, "hover"); }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    a11y.speak("Account created. Let's set up your accessibility profile.", "assistant");
+    if (role === "user") navigate({ to: "/onboarding" });
+    else navigate({ to: "/app" });
+  }
+
+  return (
+    <AuthShell title="Create your account" subtitle="Two minutes. We adapt the rest to you.">
+      <div role="tablist" aria-label="Account type" className="grid grid-cols-2 gap-2 mb-6">
+        {(["user", "employer"] as const).map((r) => (
+          <button
+            key={r}
+            role="tab"
+            aria-selected={role === r}
+            onClick={() => { setRole(r); a11y.speak(`${r} account selected`, "assistant"); }}
+            className={`rounded-xl border-2 py-3 font-bold capitalize ${role === r ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}
+          >
+            {r === "user" ? "👤 PwD" : "🏢 Employer"}
+          </button>
+        ))}
+      </div>
+
+      <form onSubmit={submit} className="space-y-4">
+        <Field label="Full name" name="name" placeholder="Your name" onSpeak={fieldHover("Type your full name")} />
+        <Field label="Email" name="email" type="email" placeholder="you@example.com" onSpeak={fieldHover("Type your email address")} />
+        <Field label="Password" name="pw" type="password" placeholder="At least 8 characters" onSpeak={fieldHover("Choose a password, at least 8 characters")} />
+        {role === "employer" && (
+          <Field label="Company name" name="company" placeholder="Acme Pvt Ltd" onSpeak={fieldHover("Type your company name")} />
+        )}
+        <button
+          type="submit"
+          aria-label="Create account"
+          className="w-full rounded-xl bg-primary text-primary-foreground font-black py-4 shadow-soft"
+        >
+          Create account →
+        </button>
+        <p className="text-sm text-center text-muted-foreground">
+          Already have an account?{" "}
+          <Link to="/auth/sign-in" className="font-bold text-primary underline">Sign in</Link>
+        </p>
+      </form>
+    </AuthShell>
+  );
+}
