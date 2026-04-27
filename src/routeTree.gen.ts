@@ -17,9 +17,13 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AuthSignUpRouteImport } from './routes/auth.sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
 import { Route as AppUdidRouteImport } from './routes/app.udid'
+import { Route as AppScriptsRouteImport } from './routes/app.scripts'
 import { Route as AppSchemesRouteImport } from './routes/app.schemes'
+import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppMapRouteImport } from './routes/app.map'
 import { Route as AppJobsRouteImport } from './routes/app.jobs'
+import { Route as AppInterviewRouteImport } from './routes/app.interview'
+import { Route as AppCommunityRouteImport } from './routes/app.community'
 import { Route as AppCommunicationRouteImport } from './routes/app.communication'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -62,9 +66,19 @@ const AppUdidRoute = AppUdidRouteImport.update({
   path: '/udid',
   getParentRoute: () => AppRoute,
 } as any)
+const AppScriptsRoute = AppScriptsRouteImport.update({
+  id: '/scripts',
+  path: '/scripts',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSchemesRoute = AppSchemesRouteImport.update({
   id: '/schemes',
   path: '/schemes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMapRoute = AppMapRouteImport.update({
@@ -75,6 +89,16 @@ const AppMapRoute = AppMapRouteImport.update({
 const AppJobsRoute = AppJobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInterviewRoute = AppInterviewRouteImport.update({
+  id: '/interview',
+  path: '/interview',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCommunityRoute = AppCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCommunicationRoute = AppCommunicationRouteImport.update({
@@ -89,9 +113,13 @@ export interface FileRoutesByFullPath {
   '/consent': typeof ConsentRoute
   '/onboarding': typeof OnboardingRoute
   '/app/communication': typeof AppCommunicationRoute
+  '/app/community': typeof AppCommunityRoute
+  '/app/interview': typeof AppInterviewRoute
   '/app/jobs': typeof AppJobsRoute
   '/app/map': typeof AppMapRoute
+  '/app/profile': typeof AppProfileRoute
   '/app/schemes': typeof AppSchemesRoute
+  '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -102,9 +130,13 @@ export interface FileRoutesByTo {
   '/consent': typeof ConsentRoute
   '/onboarding': typeof OnboardingRoute
   '/app/communication': typeof AppCommunicationRoute
+  '/app/community': typeof AppCommunityRoute
+  '/app/interview': typeof AppInterviewRoute
   '/app/jobs': typeof AppJobsRoute
   '/app/map': typeof AppMapRoute
+  '/app/profile': typeof AppProfileRoute
   '/app/schemes': typeof AppSchemesRoute
+  '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -117,9 +149,13 @@ export interface FileRoutesById {
   '/consent': typeof ConsentRoute
   '/onboarding': typeof OnboardingRoute
   '/app/communication': typeof AppCommunicationRoute
+  '/app/community': typeof AppCommunityRoute
+  '/app/interview': typeof AppInterviewRoute
   '/app/jobs': typeof AppJobsRoute
   '/app/map': typeof AppMapRoute
+  '/app/profile': typeof AppProfileRoute
   '/app/schemes': typeof AppSchemesRoute
+  '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
@@ -133,9 +169,13 @@ export interface FileRouteTypes {
     | '/consent'
     | '/onboarding'
     | '/app/communication'
+    | '/app/community'
+    | '/app/interview'
     | '/app/jobs'
     | '/app/map'
+    | '/app/profile'
     | '/app/schemes'
+    | '/app/scripts'
     | '/app/udid'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -146,9 +186,13 @@ export interface FileRouteTypes {
     | '/consent'
     | '/onboarding'
     | '/app/communication'
+    | '/app/community'
+    | '/app/interview'
     | '/app/jobs'
     | '/app/map'
+    | '/app/profile'
     | '/app/schemes'
+    | '/app/scripts'
     | '/app/udid'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -160,9 +204,13 @@ export interface FileRouteTypes {
     | '/consent'
     | '/onboarding'
     | '/app/communication'
+    | '/app/community'
+    | '/app/interview'
     | '/app/jobs'
     | '/app/map'
+    | '/app/profile'
     | '/app/schemes'
+    | '/app/scripts'
     | '/app/udid'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -236,11 +284,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUdidRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/scripts': {
+      id: '/app/scripts'
+      path: '/scripts'
+      fullPath: '/app/scripts'
+      preLoaderRoute: typeof AppScriptsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/schemes': {
       id: '/app/schemes'
       path: '/schemes'
       fullPath: '/app/schemes'
       preLoaderRoute: typeof AppSchemesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/profile': {
+      id: '/app/profile'
+      path: '/profile'
+      fullPath: '/app/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/map': {
@@ -257,6 +319,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJobsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/interview': {
+      id: '/app/interview'
+      path: '/interview'
+      fullPath: '/app/interview'
+      preLoaderRoute: typeof AppInterviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/community': {
+      id: '/app/community'
+      path: '/community'
+      fullPath: '/app/community'
+      preLoaderRoute: typeof AppCommunityRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/communication': {
       id: '/app/communication'
       path: '/communication'
@@ -269,18 +345,26 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppCommunicationRoute: typeof AppCommunicationRoute
+  AppCommunityRoute: typeof AppCommunityRoute
+  AppInterviewRoute: typeof AppInterviewRoute
   AppJobsRoute: typeof AppJobsRoute
   AppMapRoute: typeof AppMapRoute
+  AppProfileRoute: typeof AppProfileRoute
   AppSchemesRoute: typeof AppSchemesRoute
+  AppScriptsRoute: typeof AppScriptsRoute
   AppUdidRoute: typeof AppUdidRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppCommunicationRoute: AppCommunicationRoute,
+  AppCommunityRoute: AppCommunityRoute,
+  AppInterviewRoute: AppInterviewRoute,
   AppJobsRoute: AppJobsRoute,
   AppMapRoute: AppMapRoute,
+  AppProfileRoute: AppProfileRoute,
   AppSchemesRoute: AppSchemesRoute,
+  AppScriptsRoute: AppScriptsRoute,
   AppUdidRoute: AppUdidRoute,
   AppIndexRoute: AppIndexRoute,
 }
