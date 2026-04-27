@@ -9,38 +9,246 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ConsentRouteImport } from './routes/consent'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AuthSignUpRouteImport } from './routes/auth.sign-up'
+import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
+import { Route as AppUdidRouteImport } from './routes/app.udid'
+import { Route as AppScriptsRouteImport } from './routes/app.scripts'
+import { Route as AppSchemesRouteImport } from './routes/app.schemes'
+import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppMapRouteImport } from './routes/app.map'
+import { Route as AppJobsRouteImport } from './routes/app.jobs'
+import { Route as AppInterviewRouteImport } from './routes/app.interview'
+import { Route as AppCommunityRouteImport } from './routes/app.community'
+import { Route as AppCommunicationRouteImport } from './routes/app.communication'
 
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsentRoute = ConsentRouteImport.update({
+  id: '/consent',
+  path: '/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AuthSignUpRoute = AuthSignUpRouteImport.update({
+  id: '/auth/sign-up',
+  path: '/auth/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignInRoute = AuthSignInRouteImport.update({
+  id: '/auth/sign-in',
+  path: '/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppUdidRoute = AppUdidRouteImport.update({
+  id: '/udid',
+  path: '/udid',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScriptsRoute = AppScriptsRouteImport.update({
+  id: '/scripts',
+  path: '/scripts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSchemesRoute = AppSchemesRouteImport.update({
+  id: '/schemes',
+  path: '/schemes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMapRoute = AppMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppJobsRoute = AppJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInterviewRoute = AppInterviewRouteImport.update({
+  id: '/interview',
+  path: '/interview',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCommunityRoute = AppCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCommunicationRoute = AppCommunicationRouteImport.update({
+  id: '/communication',
+  path: '/communication',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/consent': typeof ConsentRoute
+  '/onboarding': typeof OnboardingRoute
+  '/app/communication': typeof AppCommunicationRoute
+  '/app/community': typeof AppCommunityRoute
+  '/app/interview': typeof AppInterviewRoute
+  '/app/jobs': typeof AppJobsRoute
+  '/app/map': typeof AppMapRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/schemes': typeof AppSchemesRoute
+  '/app/scripts': typeof AppScriptsRoute
+  '/app/udid': typeof AppUdidRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/consent': typeof ConsentRoute
+  '/onboarding': typeof OnboardingRoute
+  '/app/communication': typeof AppCommunicationRoute
+  '/app/community': typeof AppCommunityRoute
+  '/app/interview': typeof AppInterviewRoute
+  '/app/jobs': typeof AppJobsRoute
+  '/app/map': typeof AppMapRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/schemes': typeof AppSchemesRoute
+  '/app/scripts': typeof AppScriptsRoute
+  '/app/udid': typeof AppUdidRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/consent': typeof ConsentRoute
+  '/onboarding': typeof OnboardingRoute
+  '/app/communication': typeof AppCommunicationRoute
+  '/app/community': typeof AppCommunityRoute
+  '/app/interview': typeof AppInterviewRoute
+  '/app/jobs': typeof AppJobsRoute
+  '/app/map': typeof AppMapRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/schemes': typeof AppSchemesRoute
+  '/app/scripts': typeof AppScriptsRoute
+  '/app/udid': typeof AppUdidRoute
+  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/sign-up': typeof AuthSignUpRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/consent'
+    | '/onboarding'
+    | '/app/communication'
+    | '/app/community'
+    | '/app/interview'
+    | '/app/jobs'
+    | '/app/map'
+    | '/app/profile'
+    | '/app/schemes'
+    | '/app/scripts'
+    | '/app/udid'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/consent'
+    | '/onboarding'
+    | '/app/communication'
+    | '/app/community'
+    | '/app/interview'
+    | '/app/jobs'
+    | '/app/map'
+    | '/app/profile'
+    | '/app/schemes'
+    | '/app/scripts'
+    | '/app/udid'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/consent'
+    | '/onboarding'
+    | '/app/communication'
+    | '/app/community'
+    | '/app/interview'
+    | '/app/jobs'
+    | '/app/map'
+    | '/app/profile'
+    | '/app/schemes'
+    | '/app/scripts'
+    | '/app/udid'
+    | '/auth/sign-in'
+    | '/auth/sign-up'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  ConsentRoute: typeof ConsentRoute
+  OnboardingRoute: typeof OnboardingRoute
+  AuthSignInRoute: typeof AuthSignInRoute
+  AuthSignUpRoute: typeof AuthSignUpRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consent': {
+      id: '/consent'
+      path: '/consent'
+      fullPath: '/consent'
+      preLoaderRoute: typeof ConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +256,128 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/auth/sign-up': {
+      id: '/auth/sign-up'
+      path: '/auth/sign-up'
+      fullPath: '/auth/sign-up'
+      preLoaderRoute: typeof AuthSignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/sign-in': {
+      id: '/auth/sign-in'
+      path: '/auth/sign-in'
+      fullPath: '/auth/sign-in'
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/udid': {
+      id: '/app/udid'
+      path: '/udid'
+      fullPath: '/app/udid'
+      preLoaderRoute: typeof AppUdidRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/scripts': {
+      id: '/app/scripts'
+      path: '/scripts'
+      fullPath: '/app/scripts'
+      preLoaderRoute: typeof AppScriptsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/schemes': {
+      id: '/app/schemes'
+      path: '/schemes'
+      fullPath: '/app/schemes'
+      preLoaderRoute: typeof AppSchemesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/profile': {
+      id: '/app/profile'
+      path: '/profile'
+      fullPath: '/app/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/map': {
+      id: '/app/map'
+      path: '/map'
+      fullPath: '/app/map'
+      preLoaderRoute: typeof AppMapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/jobs': {
+      id: '/app/jobs'
+      path: '/jobs'
+      fullPath: '/app/jobs'
+      preLoaderRoute: typeof AppJobsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/interview': {
+      id: '/app/interview'
+      path: '/interview'
+      fullPath: '/app/interview'
+      preLoaderRoute: typeof AppInterviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/community': {
+      id: '/app/community'
+      path: '/community'
+      fullPath: '/app/community'
+      preLoaderRoute: typeof AppCommunityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/communication': {
+      id: '/app/communication'
+      path: '/communication'
+      fullPath: '/app/communication'
+      preLoaderRoute: typeof AppCommunicationRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppCommunicationRoute: typeof AppCommunicationRoute
+  AppCommunityRoute: typeof AppCommunityRoute
+  AppInterviewRoute: typeof AppInterviewRoute
+  AppJobsRoute: typeof AppJobsRoute
+  AppMapRoute: typeof AppMapRoute
+  AppProfileRoute: typeof AppProfileRoute
+  AppSchemesRoute: typeof AppSchemesRoute
+  AppScriptsRoute: typeof AppScriptsRoute
+  AppUdidRoute: typeof AppUdidRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppCommunicationRoute: AppCommunicationRoute,
+  AppCommunityRoute: AppCommunityRoute,
+  AppInterviewRoute: AppInterviewRoute,
+  AppJobsRoute: AppJobsRoute,
+  AppMapRoute: AppMapRoute,
+  AppProfileRoute: AppProfileRoute,
+  AppSchemesRoute: AppSchemesRoute,
+  AppScriptsRoute: AppScriptsRoute,
+  AppUdidRoute: AppUdidRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  ConsentRoute: ConsentRoute,
+  OnboardingRoute: OnboardingRoute,
+  AuthSignInRoute: AuthSignInRoute,
+  AuthSignUpRoute: AuthSignUpRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
