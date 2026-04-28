@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { PortalLayout } from "@/components/portal-layout";
 import { useA11y } from "@/lib/accessibility-context";
