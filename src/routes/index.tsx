@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useA11y } from "@/lib/accessibility-context";
 import { AccessibilityToolbar } from "@/components/accessibility-toolbar";
 import { CaptionBar, LiveCaptionsPanel } from "@/components/captions";
+import { GraffitiBackdrop } from "@/components/graffiti-backdrop";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -172,6 +173,7 @@ function Landing() {
 
       <LiveCaptionsPanel />
       <CaptionBar />
+      </div>
     </div>
   );
 }
