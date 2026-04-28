@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useA11y } from "@/lib/accessibility-context";
 import { AccessibilityToolbar } from "@/components/accessibility-toolbar";
 import { CaptionBar, LiveCaptionsPanel } from "@/components/captions";
+import { GraffitiBackdrop } from "@/components/graffiti-backdrop";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -53,7 +54,9 @@ function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-warm/40 via-background to-accent/20">
+    <div className="relative min-h-screen bg-gradient-to-br from-warm/40 via-background to-accent/20 overflow-hidden">
+      <GraffitiBackdrop />
+      <div className="relative">
       <header className="px-4 md:px-10 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2 font-black text-xl">
           <span aria-hidden className="text-3xl">🌉</span> DisabilityBridge
@@ -172,6 +175,7 @@ function Landing() {
 
       <LiveCaptionsPanel />
       <CaptionBar />
+      </div>
     </div>
   );
 }
