@@ -4,6 +4,7 @@ import { useA11y, DisabilityType } from "@/lib/accessibility-context";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { CaptionBar, LiveCaptionsPanel } from "@/components/captions";
 import { ISLPanel } from "@/components/isl-panel";
+import { GraffitiBackdrop } from "@/components/graffiti-backdrop";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding — DisabilityBridge" }] }),
@@ -80,8 +81,9 @@ function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-warm/30 via-background to-primary/10 px-4 py-8 md:py-14">
-      <div className="max-w-3xl mx-auto">
+    <div className="relative min-h-screen bg-gradient-to-br from-warm/30 via-background to-primary/10 px-4 py-8 md:py-14 overflow-hidden">
+      {step === 0 && <GraffitiBackdrop />}
+      <div className="relative max-w-3xl mx-auto">
         <ol aria-label="Onboarding progress" className="flex gap-2 mb-8">
           {["Disability", "Language", "Location"].map((label, i) => (
             <li key={label} className="flex-1">
