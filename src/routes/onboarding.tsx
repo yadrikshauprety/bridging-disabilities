@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useA11y, DisabilityType } from "@/lib/accessibility-context";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
@@ -84,6 +84,11 @@ function Onboarding() {
     <div className="relative min-h-screen bg-gradient-to-br from-warm/30 via-background to-primary/10 px-4 py-8 md:py-14 overflow-hidden">
       {step === 0 && <GraffitiBackdrop />}
       <div className="relative max-w-3xl mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <Link to="/" aria-label="Back to landing page" className="inline-flex items-center gap-2 font-bold text-sm hover:text-primary">
+            ← <span aria-hidden>🌉</span> DisabilityBridge home
+          </Link>
+        </div>
         <ol aria-label="Onboarding progress" className="flex gap-2 mb-8">
           {["Disability", "Language", "Location"].map((label, i) => (
             <li key={label} className="flex-1">
