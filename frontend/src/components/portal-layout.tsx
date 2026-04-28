@@ -37,6 +37,32 @@ export function PortalLayout() {
     });
   }
 
+  const isEmployer = typeof window !== "undefined" && localStorage.getItem("db_session") === "employer";
+
+  if (isEmployer) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background text-foreground">
+        <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b-2 border-border px-8 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 font-black" aria-label="DisabilityBridge home">
+            <span className="text-2xl" aria-hidden>🌉</span> DisabilityBridge
+          </Link>
+          <button
+            onClick={() => {
+              localStorage.removeItem("db_session");
+              navigate({ to: "/auth/sign-in" });
+            }}
+            className="text-sm font-bold text-muted-foreground hover:text-foreground transition"
+          >
+            Log out
+          </button>
+        </header>
+        <main id="main" className="flex-1 px-4 md:px-8 py-6">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
       {/* Sidebar (desktop) */}

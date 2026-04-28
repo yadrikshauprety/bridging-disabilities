@@ -19,8 +19,13 @@ function SignIn() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    localStorage.setItem("db_session", role);
     a11y.speak("Signed in. Welcome back.", "assistant");
-    navigate({ to: "/app" });
+    if (role === "employer") {
+      navigate({ to: "/employer" });
+    } else {
+      navigate({ to: "/app/jobs" });
+    }
   }
 
   return (

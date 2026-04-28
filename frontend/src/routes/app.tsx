@@ -14,7 +14,13 @@ function AppGate() {
   // First-run gate: app cannot be used until the user tells us their
   // disability type, so the experience adapts before they see anything.
   useEffect(() => {
-    if (!a11y.disability) {
+    const session = localStorage.getItem("db_session");
+    if (!session) {
+      navigate({ to: "/auth/sign-in", replace: true });
+    } else if (session === "employer") {
+      // Employers have their own dedicated page, not the PWD portal
+      navigate({ to: "/employer", replace: true });
+    } else if (!a11y.disability) {
       navigate({ to: "/onboarding", replace: true });
     }
   }, [a11y.disability, navigate]);

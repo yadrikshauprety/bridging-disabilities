@@ -16,6 +16,8 @@ export function HoverSpeakRoot({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hoverToSpeak) return;
+    const isEmployer = typeof window !== "undefined" && localStorage.getItem("db_session") === "employer";
+    if (isEmployer) return;
 
     const SKIP_TAGS = new Set(["HTML", "BODY", "SCRIPT", "STYLE", "SVG", "PATH", "VIDEO", "CANVAS"]);
 

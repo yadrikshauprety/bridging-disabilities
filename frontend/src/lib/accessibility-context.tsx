@@ -50,7 +50,7 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [location, setLocation] = useState("");
   const [fontScale, setFontScaleState] = useState<FontScale>(1);
   const [highContrast, setHighContrast] = useState(false);
-  const [hoverToSpeak, setHoverToSpeak] = useState(false);
+  const [hoverToSpeak, setHoverToSpeak] = useState(true);
   const [captionsVisible, setCaptionsVisibleState] = useState(true);
   const [captions, setCaptions] = useState<CaptionLine[]>([]);
   const [onboarded, setOnboarded] = useState(false);
@@ -69,8 +69,8 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
         if (s.language) setLanguage(s.language);
         if (s.location) setLocation(s.location);
         if (s.fontScale) setFontScaleState(s.fontScale);
-        if (s.highContrast) setHighContrast(s.highContrast);
-        if (s.hoverToSpeak) setHoverToSpeak(s.hoverToSpeak);
+        if (s.highContrast !== undefined) setHighContrast(s.highContrast);
+        if (s.hoverToSpeak !== undefined) setHoverToSpeak(s.hoverToSpeak);
         if (s.captionsVisible !== undefined) setCaptionsVisibleState(s.captionsVisible);
         if (s.onboarded) setOnboarded(s.onboarded);
         if (s.consented) setConsented(s.consented);
@@ -100,6 +100,25 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
 
   // Hearing-impaired users: captions must be visible
   const captionsEnabled = disability === "hearing" || captionsVisible;
+
+  // Unlock audio context on first interaction (fixes browser blocking Voice on Hover)
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        const u = new SpeechSynthesisUtterance("");
+        window.speechSynthesis.speak(u);
+        window.speechSynthesis.cancel();
+      }
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("pointerdown", unlockAudio);
+    };
+    document.addEventListener("click", unlockAudio);
+    document.addEventListener("pointerdown", unlockAudio);
+    return () => {
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("pointerdown", unlockAudio);
+    };
+  }, []);
 
   const stopSpeaking = useCallback(() => {
     if (typeof window === "undefined") return;

@@ -49,9 +49,15 @@ function Onboarding() {
 
   function setLocation(loc: string) {
     a11y.setLocation(loc);
-    a11y.speak(`Location set to ${loc}. Taking you to consent.`, "assistant");
     a11y.setOnboarded(true);
-    setTimeout(() => navigate({ to: "/consent" }), 800);
+    const session = localStorage.getItem("db_session");
+    if (session) {
+      a11y.speak(`Location set to ${loc}. Taking you to jobs.`, "assistant");
+      setTimeout(() => navigate({ to: "/app/jobs" }), 800);
+    } else {
+      a11y.speak(`Location set to ${loc}. Taking you to sign in.`, "assistant");
+      setTimeout(() => navigate({ to: "/auth/sign-in" }), 800);
+    }
   }
 
   function listenForLocation() {
@@ -188,7 +194,7 @@ function Onboarding() {
                   <button
                     type="submit"
                     className="flex-1 rounded-xl bg-primary text-primary-foreground font-black py-4"
-                    aria-label="Continue to consent"
+                    aria-label="Continue to sign in"
                   >
                     Continue →
                   </button>
