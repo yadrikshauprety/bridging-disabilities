@@ -33,6 +33,15 @@ export async function getDb() {
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (jobId) REFERENCES jobs (id)
     );
+    CREATE TABLE IF NOT EXISTS udid_applications (
+      id TEXT PRIMARY KEY,
+      userId TEXT NOT NULL,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      disabilityType TEXT NOT NULL,
+      status TEXT DEFAULT 'Submitted',
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   return db;

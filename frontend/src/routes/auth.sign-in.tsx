@@ -19,7 +19,12 @@ function SignIn() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get("id") as string;
+    
     localStorage.setItem("db_session", role);
+    if (email) localStorage.setItem("db_user_id", email);
+
     if (role === "user") {
       a11y.speak("Signed in. Welcome back.", "assistant");
       navigate({ to: "/app/jobs" });
@@ -58,6 +63,11 @@ function SignIn() {
           New here?{" "}
           <Link to="/auth/sign-up" className="font-bold text-primary underline">Create an account</Link>
         </p>
+        <div className="pt-4 mt-4 border-t border-border flex justify-center">
+          <Link to="/agency" className="text-xs font-black bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary/20 transition">
+            🏛️ Govt Agency Login
+          </Link>
+        </div>
         <p className="text-xs text-center text-muted-foreground italic">
           Auth via Clerk will be wired in later. This is a friendly demo.
         </p>

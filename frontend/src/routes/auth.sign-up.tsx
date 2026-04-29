@@ -17,6 +17,11 @@ function SignUp() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get("email") as string;
+    
+    if (email) localStorage.setItem("db_user_id", email);
+
     if (role === "user") {
       a11y.speak("Account created. Let's set up your accessibility profile.", "assistant");
       navigate({ to: "/onboarding" });
