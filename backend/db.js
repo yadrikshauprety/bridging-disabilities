@@ -19,6 +19,8 @@ export async function getDb() {
       company TEXT NOT NULL,
       description TEXT NOT NULL,
       employerId TEXT NOT NULL,
+      hasBadge INTEGER DEFAULT 0, -- 1 if employer has the inclusion badge
+      inclusionFlags TEXT, -- JSON string of feature flags
       questions TEXT NOT NULL -- stored as JSON
     );
     

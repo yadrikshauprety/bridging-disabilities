@@ -27,10 +27,11 @@ function Landing() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
   const startedRef = useRef(false);
 
   useEffect(() => {
-    if (startedRef.current) return;
+    if (!audioUnlocked || startedRef.current) return;
     startedRef.current = true;
     if (!playing) return;
     let i = 0;
@@ -45,7 +46,7 @@ function Landing() {
     tick();
     return () => { if (timerRef.current) clearTimeout(timerRef.current); a11y.stopSpeaking(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [audioUnlocked]);
 
   function skipIntro() {
     a11y.stopSpeaking();
@@ -55,6 +56,19 @@ function Landing() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-warm/40 via-background to-accent/20 overflow-hidden">
+      {!audioUnlocked && (
+        <div 
+          className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center cursor-pointer"
+          onClick={() => setAudioUnlocked(true)}
+        >
+          <div className="bg-card p-8 rounded-3xl border-4 border-primary text-center shadow-2xl max-w-sm mx-4 animate-bounce">
+            <div className="text-6xl mb-4">🔊</div>
+            <h2 className="text-2xl font-black mb-2">Tap Anywhere</h2>
+            <p className="text-muted-foreground font-bold">To enable voice navigation & captions</p>
+          </div>
+        </div>
+      )}
+      
       <GraffitiBackdrop />
       <div className="relative">
       <header className="px-4 md:px-10 py-4 flex items-center justify-between">

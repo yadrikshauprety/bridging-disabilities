@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useA11y } from "@/lib/accessibility-context";
-import { AuthShell, Field } from "./auth.sign-in";
+import { AuthShell, Field } from "@/components/auth-ui";
 
 export const Route = createFileRoute("/auth/sign-up")({
   head: () => ({ meta: [{ title: "Sign Up — DisabilityBridge" }] }),
@@ -17,9 +17,16 @@ function SignUp() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    a11y.speak("Account created. Let's set up your accessibility profile.", "assistant");
-    if (role === "user") navigate({ to: "/onboarding" });
-    else navigate({ to: "/app" });
+    if (role === "user") {
+      a11y.speak("Account created. Let's set up your accessibility profile.", "assistant");
+      navigate({ to: "/onboarding" });
+    } else {
+      localStorage.setItem("db_session", "employer");
+      localStorage.removeItem("db_employer_badge");
+      localStorage.removeItem("db_inclusion_flags");
+      localStorage.removeItem("db_survey_skipped");
+      navigate({ to: "/app/employer" });
+    }
   }
 
   return (

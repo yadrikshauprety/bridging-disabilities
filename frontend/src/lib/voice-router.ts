@@ -1,9 +1,10 @@
 export interface VoiceIntent {
   reply: string;
   to?: string;
+  action?: "start-voice" | "stop-voice";
 }
 
-const ROUTES: Array<{ patterns: RegExp[]; to: string; reply: string }> = [
+const ROUTES: Array<{ patterns: RegExp[]; to?: string; action?: "start-voice" | "stop-voice"; reply: string }> = [
   { patterns: [/(go to |open |show )?home|dashboard/i], to: "/app", reply: "Opening home" },
   { patterns: [/job/i], to: "/app/jobs", reply: "Opening jobs" },
   { patterns: [/scheme|benefit|pension/i], to: "/app/schemes", reply: "Opening schemes" },
@@ -14,6 +15,8 @@ const ROUTES: Array<{ patterns: RegExp[]; to: string; reply: string }> = [
   { patterns: [/profile|account|me/i], to: "/app/profile", reply: "Opening your profile" },
   { patterns: [/community|forum|people/i], to: "/app/community", reply: "Opening community" },
   { patterns: [/interview/i], to: "/app/interview", reply: "Opening sign language interview" },
+  { patterns: [/start voice|mic on|listen|open mic|start listening/i], action: "start-voice", reply: "Voice control activated. I am listening." },
+  { patterns: [/stop voice|mic off|quiet/i], action: "stop-voice", reply: "Voice control deactivated." },
 ];
 
 export function matchVoiceCommand(raw: string): VoiceIntent {
@@ -28,7 +31,7 @@ export function matchVoiceCommand(raw: string): VoiceIntent {
   }
 
   for (const r of ROUTES) {
-    if (r.patterns.some((p) => p.test(text))) return { to: r.to, reply: r.reply };
+    if (r.patterns.some((p) => p.test(text))) return { to: r.to, action: r.action, reply: r.reply };
   }
   return { reply: `I heard "${raw}". Try saying: show jobs, find nearest hospital, or open schemes.` };
 }

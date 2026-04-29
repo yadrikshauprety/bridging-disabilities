@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
+import * as React from "react";
+import { ReactNode } from "react";
 
 export type DisabilityType = "visual" | "hearing" | "locomotor" | "other" | null;
 export type FontScale = 1 | 2 | 3;
@@ -23,6 +24,7 @@ interface AccessibilityState {
   captions: CaptionLine[];
   onboarded: boolean;
   consented: boolean;
+  wheelchairMode: boolean;
 
   setDisability: (d: DisabilityType) => void;
   setLanguage: (l: string) => void;
@@ -33,6 +35,8 @@ interface AccessibilityState {
   setCaptionsVisible: (v: boolean) => void;
   setOnboarded: (v: boolean) => void;
   setConsented: (v: boolean) => void;
+  setWheelchairMode: (v: boolean) => void;
+  toggleWheelchairMode: () => void;
 
   speak: (text: string, source?: CaptionSource) => void;
   pushCaption: (text: string, source?: CaptionSource) => void;
@@ -40,27 +44,28 @@ interface AccessibilityState {
   stopSpeaking: () => void;
 }
 
-const Ctx = createContext<AccessibilityState | null>(null);
+const Ctx = React.createContext<AccessibilityState | null>(null);
 
 const STORAGE_KEY = "db_a11y_v1";
 
 export function AccessibilityProvider({ children }: { children: ReactNode }) {
-  const [disability, setDisabilityState] = useState<DisabilityType>(null);
-  const [language, setLanguage] = useState("English");
-  const [location, setLocation] = useState("");
-  const [fontScale, setFontScaleState] = useState<FontScale>(1);
-  const [highContrast, setHighContrast] = useState(false);
-  const [hoverToSpeak, setHoverToSpeak] = useState(true);
-  const [captionsVisible, setCaptionsVisibleState] = useState(true);
-  const [captions, setCaptions] = useState<CaptionLine[]>([]);
-  const [onboarded, setOnboarded] = useState(false);
-  const [consented, setConsented] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+  const [disability, setDisabilityState] = React.useState<DisabilityType>(null);
+  const [language, setLanguage] = React.useState("English");
+  const [location, setLocation] = React.useState("");
+  const [fontScale, setFontScaleState] = React.useState<FontScale>(1);
+  const [highContrast, setHighContrast] = React.useState(false);
+  const [hoverToSpeak, setHoverToSpeak] = React.useState(true);
+  const [captionsVisible, setCaptionsVisibleState] = React.useState(true);
+  const [captions, setCaptions] = React.useState<CaptionLine[]>([]);
+  const [onboarded, setOnboarded] = React.useState(false);
+  const [consented, setConsented] = React.useState(false);
+  const [wheelchairMode, setWheelchairModeState] = React.useState(false);
+  const [hydrated, setHydrated] = React.useState(false);
 
-  const lastSpokenRef = useRef<{ text: string; ts: number }>({ text: "", ts: 0 });
+  const lastSpokenRef = React.useRef<{ text: string; ts: number }>({ text: "", ts: 0 });
 
   // Hydrate from localStorage
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -74,35 +79,39 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
         if (s.captionsVisible !== undefined) setCaptionsVisibleState(s.captionsVisible);
         if (s.onboarded) setOnboarded(s.onboarded);
         if (s.consented) setConsented(s.consented);
+        if (s.wheelchairMode !== undefined) setWheelchairModeState(s.wheelchairMode);
       }
     } catch {}
     setHydrated(true);
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!hydrated) return;
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ disability, language, location, fontScale, highContrast, hoverToSpeak, captionsVisible, onboarded, consented })
+        JSON.stringify({ disability, language, location, fontScale, highContrast, hoverToSpeak, captionsVisible, onboarded, consented, wheelchairMode })
       );
     } catch {}
-  }, [disability, language, location, fontScale, highContrast, hoverToSpeak, captionsVisible, onboarded, consented, hydrated]);
+  }, [disability, language, location, fontScale, highContrast, hoverToSpeak, captionsVisible, onboarded, consented, wheelchairMode, hydrated]);
 
-  // Apply CSS classes for font scale + contrast
-  useEffect(() => {
+  // Apply CSS classes for font scale + contrast + disability
+  React.useEffect(() => {
     if (typeof document === "undefined") return;
     const html = document.documentElement;
-    html.classList.remove("fs-1", "fs-2", "fs-3");
+    html.classList.remove("fs-1", "fs-2", "fs-3", "disability-visual", "disability-hearing", "disability-locomotor");
     html.classList.add(`fs-${fontScale}`);
     html.classList.toggle("hc", highContrast);
-  }, [fontScale, highContrast]);
+    if (disability) {
+      html.classList.add(`disability-${disability}`);
+    }
+  }, [fontScale, highContrast, disability]);
 
   // Hearing-impaired users: captions must be visible
   const captionsEnabled = disability === "hearing" || captionsVisible;
 
   // Unlock audio context on first interaction (fixes browser blocking Voice on Hover)
-  useEffect(() => {
+  React.useEffect(() => {
     const unlockAudio = () => {
       if (typeof window !== "undefined" && window.speechSynthesis) {
         const u = new SpeechSynthesisUtterance("");
@@ -120,12 +129,12 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const stopSpeaking = useCallback(() => {
+  const stopSpeaking = React.useCallback(() => {
     if (typeof window === "undefined") return;
     try { window.speechSynthesis?.cancel(); } catch {}
   }, []);
 
-  const pushCaption = useCallback((text: string, source: CaptionSource = "system") => {
+  const pushCaption = React.useCallback((text: string, source: CaptionSource = "system") => {
     if (!text) return;
     setCaptions((prev) => {
       const next = [...prev, { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, text, source, ts: Date.now() }];
@@ -133,15 +142,19 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const speak = useCallback(
+  const speak = React.useCallback(
     (text: string, source: CaptionSource = "system") => {
       if (!text) return;
       // Always show as caption
       pushCaption(text, source);
 
-      // Hearing-impaired: never speak audibly
+      // Hearing-impaired or Employer portal: never speak audibly
       if (disability === "hearing") return;
       if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+      if (window.location.pathname.includes("/employer")) {
+        // We still want captions, but no audio.
+        return;
+      }
 
       // De-dupe rapid identical calls (hover-to-speak fires repeatedly)
       const now = Date.now();
@@ -161,34 +174,36 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     [disability, language, pushCaption]
   );
 
-  const clearCaptions = useCallback(() => setCaptions([]), []);
+  const clearCaptions = React.useCallback(() => setCaptions([]), []);
 
-  const setDisability = useCallback((d: DisabilityType) => {
+  const setDisability = React.useCallback((d: DisabilityType) => {
     setDisabilityState(d);
     if (d === "hearing") {
       setCaptionsVisibleState(true);
     }
   }, []);
 
-  const setFontScale = useCallback((s: FontScale) => setFontScaleState(s), []);
-  const toggleHighContrast = useCallback(() => setHighContrast((v) => !v), []);
-  const toggleHoverToSpeak = useCallback(() => setHoverToSpeak((v) => !v), []);
-  const setCaptionsVisible = useCallback((v: boolean) => setCaptionsVisibleState(v), []);
+  const setFontScale = React.useCallback((s: FontScale) => setFontScaleState(s), []);
+  const toggleHighContrast = React.useCallback(() => setHighContrast((v) => !v), []);
+  const toggleHoverToSpeak = React.useCallback(() => setHoverToSpeak((v) => !v), []);
+  const setWheelchairMode = React.useCallback((v: boolean) => setWheelchairModeState(v), []);
+  const toggleWheelchairMode = React.useCallback(() => setWheelchairModeState((v) => !v), []);
+  const setCaptionsVisible = React.useCallback((v: boolean) => setCaptionsVisibleState(v), []);
 
   const value: AccessibilityState = {
     disability, language, location, fontScale, highContrast, hoverToSpeak,
-    captionsEnabled, captionsVisible, captions, onboarded, consented,
+    captionsEnabled, captionsVisible, captions, onboarded, consented, wheelchairMode,
     setDisability, setLanguage, setLocation, setFontScale,
-    toggleHighContrast, toggleHoverToSpeak, setCaptionsVisible,
+    toggleHighContrast, toggleHoverToSpeak, setWheelchairMode, toggleWheelchairMode, setCaptionsVisible,
     setOnboarded, setConsented,
     speak, pushCaption, clearCaptions, stopSpeaking,
   };
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={value}>{hydrated ? children : null}</Ctx.Provider>;
 }
 
 export function useA11y() {
-  const v = useContext(Ctx);
+  const v = React.useContext(Ctx);
   if (!v) throw new Error("useA11y must be used within AccessibilityProvider");
   return v;
 }

@@ -205,3 +205,23 @@
   50% { transform: translateY(-6px); }
 }
 .animate-float { animation: float-y 4s ease-in-out infinite; }
+
+/* ── Disability Specific Tweaks ── */
+.disability-visual * {
+  text-shadow: 0 0 1px rgba(0,0,0,0.1);
+}
+.disability-visual *:hover, .disability-visual *:focus {
+  outline: 4px solid var(--accent) !important;
+  outline-offset: 2px;
+}
+
+.disability-locomotor button, .disability-locomotor a {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.disability-hearing .CaptionBar {
+  background: rgba(0,0,0,0.9);
+  font-weight: 800;
+  font-size: 1.2rem;
+}

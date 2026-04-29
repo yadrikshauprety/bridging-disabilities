@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useA11y } from "@/lib/accessibility-context";
+import { EMPLOYER_SURVEY_QUESTIONS } from "@/lib/survey-questions";
 
 export const Route = createFileRoute("/app/jobs")({
   head: () => ({ meta: [{ title: "Jobs — DisabilityBridge" }] }),
@@ -12,6 +13,7 @@ function JobsPage() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchJobs() {
@@ -55,9 +57,34 @@ function JobsPage() {
               <article className="rounded-2xl border-2 border-border bg-card p-5 hover:border-primary transition">
                 <div className="flex items-start gap-4 flex-wrap">
                   <div className="flex-1 min-w-0">
-                    <h2 className="font-black text-2xl">{j.title}</h2>
-                    <p className="text-muted-foreground font-bold">{j.company}</p>
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-black text-2xl">{j.title}</h2>
+                      {j.hasBadge === 1 && (
+                        <span className="bg-primary text-primary-foreground text-[10px] font-black uppercase px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                          <span className="text-sm">🛡️</span> Disabled Friendly
+                        </span>
+                      )}
+                    </div>
+                     <p className="text-muted-foreground font-bold">{j.company}</p>
                     <p className="mt-3 text-sm">{j.description}</p>
+                    
+                    {expanded === j.id && (
+                      <div className="mt-6 border-t pt-4">
+                        <h3 className="text-xs font-black uppercase text-muted-foreground mb-3">Workplace Accessibility</h3>
+                        <ul className="grid sm:grid-cols-2 gap-2 text-xs">
+                          {EMPLOYER_SURVEY_QUESTIONS.map((q, i) => {
+                            const flags = j.inclusionFlags || {};
+                            const hasFeature = flags[i] === true;
+                            return (
+                              <li key={i} className={`flex items-start gap-2 ${!hasFeature ? "line-through text-muted-foreground opacity-50" : "font-bold text-primary"}`}>
+                                <span>{hasFeature ? "✓" : "✕"}</span>
+                                <span>{q}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col gap-2">
                     <button
@@ -73,6 +100,12 @@ function JobsPage() {
                       className="rounded-xl border-2 border-border font-bold px-5 py-2 hover:border-primary"
                     >
                       🔊 Read aloud
+                    </button>
+                    <button
+                      onClick={() => setExpanded(expanded === j.id ? null : j.id)}
+                      className="text-xs font-bold text-muted-foreground hover:text-primary transition"
+                    >
+                      {expanded === j.id ? "Hide Details" : "View Accessibility Details"}
                     </button>
                   </div>
                 </div>

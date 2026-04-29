@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { SurveyModal } from "@/components/employer-survey";
 
 export const Route = createFileRoute("/app/employer")({
   head: () => ({ meta: [{ title: "Employer Portal — DisabilityBridge" }] }),
@@ -64,6 +65,27 @@ function EmployerPage() {
   // Applications state
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loadingInt, setLoadingInt] = useState(false);
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [hasBadge, setHasBadge] = useState(false);
+  const [inclusionFlags, setInclusionFlags] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    const saved = localStorage.getItem("db_employer_badge");
+    if (saved === "true") setHasBadge(true);
+    
+    const savedFlags = localStorage.getItem("db_inclusion_flags");
+    if (savedFlags) setInclusionFlags(JSON.parse(savedFlags));
+
+    if (!saved && !localStorage.getItem("db_survey_skipped")) setShowSurvey(true);
+  }, []);
+
+  const handleSurveyComplete = (earned: boolean, answers: Record<number, boolean>) => {
+    setHasBadge(earned);
+    setInclusionFlags(answers);
+    if (earned) localStorage.setItem("db_employer_badge", "true");
+    localStorage.setItem("db_inclusion_flags", JSON.stringify(answers));
+    setShowSurvey(false);
+  };
 
   useEffect(() => {
     if (tab === "applications") loadInterviews();
@@ -95,7 +117,15 @@ function EmployerPage() {
       const res = await fetch("http://localhost:5000/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, company, description, employerId: "emp_1", questions }),
+        body: JSON.stringify({ 
+          title, 
+          company, 
+          description, 
+          employerId: "emp_1", 
+          questions, 
+          hasBadge: hasBadge ? 1 : 0,
+          inclusionFlags: JSON.stringify(inclusionFlags)
+        }),
       });
       if (res.ok) {
         setPostSuccess(true);
@@ -141,6 +171,8 @@ function EmployerPage() {
           </button>
         </div>
       </header>
+
+      {showSurvey && <SurveyModal onComplete={handleSurveyComplete} />}
 
       <main className="max-w-4xl mx-auto px-6 py-10">
 

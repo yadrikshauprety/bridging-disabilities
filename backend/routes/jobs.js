@@ -12,7 +12,8 @@ router.get("/", async (req, res) => {
     // Parse questions JSON string back to array
     const formattedJobs = jobs.map(j => ({
       ...j,
-      questions: JSON.parse(j.questions)
+      questions: JSON.parse(j.questions || "[]"),
+      inclusionFlags: JSON.parse(j.inclusionFlags || "{}")
     }));
     
     res.json(formattedJobs);
@@ -24,7 +25,7 @@ router.get("/", async (req, res) => {
 
 // Create a new job (Employer Portal)
 router.post("/", async (req, res) => {
-  const { title, company, description, employerId, questions } = req.body;
+  const { title, company, description, employerId, questions, hasBadge, inclusionFlags } = req.body;
   
   if (!title || !company) {
     return res.status(400).json({ error: "Title and company are required" });
@@ -37,11 +38,11 @@ router.post("/", async (req, res) => {
   try {
     const db = await getDb();
     await db.run(
-      "INSERT INTO jobs (id, title, company, description, employerId, questions) VALUES (?, ?, ?, ?, ?, ?)",
-      [id, title, company, description, empId, qStr]
+      "INSERT INTO jobs (id, title, company, description, employerId, questions, hasBadge, inclusionFlags) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [id, title, company, description, empId, qStr, hasBadge || 0, inclusionFlags || "{}"]
     );
 
-    res.status(201).json({ id, title, company, description, employerId: empId, questions });
+    res.status(201).json({ id, title, company, description, employerId: empId, questions, hasBadge, inclusionFlags });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create job" });
@@ -58,7 +59,8 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Job not found" });
     }
     
-    job.questions = JSON.parse(job.questions);
+    job.questions = JSON.parse(job.questions || "[]");
+    job.inclusionFlags = JSON.parse(job.inclusionFlags || "{}");
     res.json(job);
   } catch (error) {
     console.error(error);

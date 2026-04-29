@@ -37,6 +37,9 @@ function Onboarding() {
 
   function pickDisability(d: Exclude<DisabilityType, null>) {
     a11y.setDisability(d);
+    if (d === "locomotor") {
+      a11y.setWheelchairMode(true); // Explicitly turn on continuous voice
+    }
     a11y.speak(`You selected ${d}. ${DISABILITIES.find(x => x.id === d)?.desc ?? ""}`, "assistant");
     setTimeout(() => setStep(1), 700);
   }

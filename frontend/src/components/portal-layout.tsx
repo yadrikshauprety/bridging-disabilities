@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import * as React from "react";
 import { useA11y } from "@/lib/accessibility-context";
 import { AccessibilityToolbar } from "@/components/accessibility-toolbar";
 import { LiveCaptionsPanel, CaptionBar } from "@/components/captions";
@@ -24,18 +25,53 @@ export function PortalLayout() {
   const a11y = useA11y();
   const location = useLocation();
   const navigate = useNavigate();
-  const sr = useSpeechRecognition({ lang: a11y.language === "Hindi" ? "hi-IN" : "en-IN" });
+  const sr = useSpeechRecognition({ 
+    lang: a11y.language === "Hindi" ? "hi-IN" : "en-IN",
+    continuous: a11y.wheelchairMode
+  });
+
+  const [lastCommand, setLastCommand] = React.useState<string | null>(null);
+  const [lastReply, setLastReply] = React.useState<string | null>(null);
+  const commandTimeoutRef = React.useRef<any>(null);
+
+  const handleCommand = React.useCallback((cmd: string) => {
+    if (!cmd.trim()) return;
+    const intent = matchVoiceCommand(cmd);
+    setLastCommand(cmd);
+    setLastReply(intent.reply);
+    a11y.pushCaption(cmd, "user");
+    a11y.speak(intent.reply, "assistant");
+    
+    if (intent.action === "start-voice") {
+      if (!sr.listening) sr.start((res) => handleCommand(res.transcript));
+    } else if (intent.action === "stop-voice") {
+      sr.stop();
+    } else if (intent.to) {
+      setTimeout(() => navigate({ to: intent.to as any }), 1200);
+    }
+
+    if (commandTimeoutRef.current) clearTimeout(commandTimeoutRef.current);
+    commandTimeoutRef.current = setTimeout(() => {
+      setLastCommand(null);
+      setLastReply(null);
+    }, 4000);
+  }, [a11y, navigate, sr.listening, sr.start, sr.stop]);
 
   function toggleMic() {
     if (sr.listening) { sr.stop(); return; }
     a11y.speak("Listening. Say a command.", "assistant");
-    sr.start((res) => {
-      const intent = matchVoiceCommand(res.transcript);
-      a11y.pushCaption(res.transcript, "user");
-      a11y.speak(intent.reply, "assistant");
-      if (intent.to) setTimeout(() => navigate({ to: intent.to as any }), 600);
-    });
+    sr.start((res) => handleCommand(res.transcript));
   }
+
+  // Wheelchair mode: Auto-restart mic if it stops and mode is on
+  React.useEffect(() => {
+    if (a11y.wheelchairMode && !sr.listening) {
+      const id = setTimeout(() => {
+        sr.start((res) => handleCommand(res.transcript));
+      }, 500);
+      return () => clearTimeout(id);
+    }
+  }, [a11y.wheelchairMode, sr.listening, sr.start]);
 
   const isEmployer = typeof window !== "undefined" && localStorage.getItem("db_session") === "employer";
 
@@ -83,6 +119,7 @@ export function PortalLayout() {
                 to={n.to as any}
                 aria-current={active ? "page" : undefined}
                 aria-label={n.label}
+                onMouseEnter={() => a11y.hoverToSpeak && a11y.speak(n.label, "assistant")}
                 className={`flex items-center gap-3 px-3 py-2 rounded-xl font-semibold transition ${
                   active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent text-sidebar-foreground"
                 }`}
@@ -116,6 +153,20 @@ export function PortalLayout() {
           >
             🎤 {sr.listening ? "Listening…" : "Voice"}
           </button>
+          
+          <button
+            onClick={() => {
+              a11y.toggleWheelchairMode();
+              a11y.speak(`Wheelchair mode ${!a11y.wheelchairMode ? "activated" : "deactivated"}`, "assistant");
+            }}
+            aria-label="Toggle Wheelchair Voice Mode"
+            aria-pressed={a11y.wheelchairMode}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 font-bold border-2 transition ${
+              a11y.wheelchairMode ? "bg-accent text-accent-foreground border-accent" : "bg-card border-accent hover:bg-accent hover:text-accent-foreground"
+            }`}
+          >
+            ♿ {a11y.wheelchairMode ? "Voice On" : "Voice Off"}
+          </button>
           <AccessibilityToolbar />
         </header>
 
@@ -136,6 +187,7 @@ export function PortalLayout() {
                 to={n.to as any}
                 aria-label={n.label}
                 aria-current={active ? "page" : undefined}
+                onMouseEnter={() => a11y.hoverToSpeak && a11y.speak(n.label, "assistant")}
                 className={`flex flex-col items-center justify-center py-2 ${active ? "text-primary font-bold" : "text-muted-foreground"}`}
               >
                 <span className="text-xl" aria-hidden>{n.icon}</span>
@@ -149,6 +201,21 @@ export function PortalLayout() {
       <SOSButton />
       <LiveCaptionsPanel />
       <CaptionBar />
+      
+      {/* Voice Feedback Overlay */}
+      {lastCommand && (
+        <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-2 animate-in fade-in slide-in-from-bottom-4">
+          <div className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl rounded-br-none shadow-lg font-bold text-sm">
+            “{lastCommand}”
+          </div>
+          {lastReply && (
+            <div className="bg-card border-2 border-primary/20 px-4 py-2 rounded-2xl rounded-tr-none shadow-lg font-medium text-xs text-muted-foreground italic">
+              {lastReply}
+            </div>
+          )}
+        </div>
+      )}
+
       {a11y.disability === "hearing" && <ISLPanel />}
     </div>
   );

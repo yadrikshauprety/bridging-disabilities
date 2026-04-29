@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import * as React from "react";
 
 interface SpeechRecognitionResult {
   transcript: string;
@@ -6,14 +6,14 @@ interface SpeechRecognitionResult {
 }
 
 export function useSpeechRecognition(opts?: { lang?: string; continuous?: boolean }) {
-  const [supported, setSupported] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [transcript, setTranscript] = useState("");
-  const [interim, setInterim] = useState("");
-  const recognitionRef = useRef<any>(null);
-  const onResultRef = useRef<((r: SpeechRecognitionResult) => void) | null>(null);
+  const [supported, setSupported] = React.useState(false);
+  const [listening, setListening] = React.useState(false);
+  const [transcript, setTranscript] = React.useState("");
+  const [interim, setInterim] = React.useState("");
+  const recognitionRef = React.useRef<any>(null);
+  const onResultRef = React.useRef<((r: SpeechRecognitionResult) => void) | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (typeof window === "undefined") return;
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) return;
@@ -46,7 +46,7 @@ export function useSpeechRecognition(opts?: { lang?: string; continuous?: boolea
     };
   }, [opts?.lang, opts?.continuous]);
 
-  const start = useCallback((onResult?: (r: SpeechRecognitionResult) => void) => {
+  const start = React.useCallback((onResult?: (r: SpeechRecognitionResult) => void) => {
     if (!recognitionRef.current) return;
     onResultRef.current = onResult ?? null;
     setTranscript("");
@@ -57,13 +57,13 @@ export function useSpeechRecognition(opts?: { lang?: string; continuous?: boolea
     } catch {}
   }, []);
 
-  const stop = useCallback(() => {
+  const stop = React.useCallback(() => {
     if (!recognitionRef.current) return;
     try { recognitionRef.current.stop(); } catch {}
     setListening(false);
   }, []);
 
-  const reset = useCallback(() => { setTranscript(""); setInterim(""); }, []);
+  const reset = React.useCallback(() => { setTranscript(""); setInterim(""); }, []);
 
   return { supported, listening, transcript, interim, start, stop, reset };
 }
