@@ -6,6 +6,7 @@ import interviewsRouter from "./routes/interviews.js";
 import udidRouter from "./routes/udid.js";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
+import schemesRouter from "./routes/schemes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +25,7 @@ app.use("/api/interviews", interviewsRouter);
 app.use("/api/udid", udidRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/schemes", schemesRouter);
 
 app.listen(PORT, () => {
   console.log(`Backend server listening on port ${PORT}`);
