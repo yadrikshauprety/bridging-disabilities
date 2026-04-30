@@ -169,6 +169,17 @@ function EmployerPage() {
           >
             Log out
           </button>
+          <button
+            onClick={() => {
+              localStorage.removeItem("db_employer_badge");
+              localStorage.removeItem("db_inclusion_flags");
+              localStorage.removeItem("db_survey_skipped");
+              window.location.reload();
+            }}
+            className="text-xs font-bold text-blue-600 hover:underline"
+          >
+            Retake Inclusion Audit
+          </button>
         </div>
       </header>
 

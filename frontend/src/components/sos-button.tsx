@@ -6,10 +6,18 @@ export function SOSButton() {
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
 
-  function trigger() {
+  async function trigger() {
     setSent(true);
+    const userId = localStorage.getItem("db_user_id");
+    if (userId) {
+      try {
+        await fetch(`http://localhost:5000/api/user/sos/${userId}`, { method: "POST" });
+      } catch (err) {
+        console.error("SOS Trigger failed", err);
+      }
+    }
     speak("S O S triggered. Your location has been broadcast to your emergency contacts and the nearest disability rehabilitation centre.", "system");
-    setTimeout(() => { setSent(false); setOpen(false); }, 4000);
+    setTimeout(() => { setSent(false); setOpen(false); }, 5000);
   }
 
   return (

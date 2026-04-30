@@ -36,6 +36,10 @@ function SignUp() {
           navigate({ to: "/onboarding" });
         } else {
           localStorage.setItem("db_session", "employer");
+          // Clear previous audit state for fresh registration
+          localStorage.removeItem("db_employer_badge");
+          localStorage.removeItem("db_inclusion_flags");
+          localStorage.removeItem("db_survey_skipped");
           navigate({ to: "/app/employer" });
         }
       } else {

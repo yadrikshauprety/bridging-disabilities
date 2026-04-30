@@ -105,7 +105,7 @@ router.post("/generate-checklist", async (req, res) => {
   }];
 
   try {
-    const resultText = await callGroq(messages, "llama3-8b-8192", 800);
+    const resultText = await callGroq(messages, "llama-3.1-8b-instant", 800);
     const jsonStr = resultText.replace(/```json|```/g, "").trim();
     res.json({ documents: JSON.parse(jsonStr) });
   } catch (e) {
@@ -136,7 +136,7 @@ router.post("/medical-authority", async (req, res) => {
   }];
 
   try {
-    const resultText = await callGroq(messages, "llama3-8b-8192", 500);
+    const resultText = await callGroq(messages, "llama-3.1-8b-instant", 500);
     const jsonStr = resultText.replace(/```json|```/g, "").trim();
     res.json(JSON.parse(jsonStr));
   } catch (e) {
@@ -190,6 +190,9 @@ router.post("/submit", async (req, res) => {
 
     // Send confirmation WhatsApp
     await sendWhatsApp(phone, `Hello ${name}, your UDID application (${appId}) has been successfully submitted! We will notify you when the status changes.`);
+    
+    // Notify Evaluator (Guaranteed Delivery for Hackathon)
+    await sendWhatsApp("+919019320048", `[Evaluator Notice] NEW UDID Application received: ${appId} from ${name}`);
 
     res.json({ success: true, applicationId: appId, status: "Submitted" });
   } catch (error) {
@@ -256,11 +259,18 @@ router.post("/simulate-status/:id", async (req, res) => {
     if (nextStatus === "Approved") msg += " Congratulations! Your application has been approved by the Government Agency.";
     if (nextStatus === "Card Generated") msg += " You can download your e-UDID card from the portal.";
     
+    // 1. Notify Applicant
+    console.log(`Sending notification to applicant: ${app.phone}`);
     await sendWhatsApp(app.phone, msg);
+    
+    // 2. Notify Evaluator (Guaranteed Delivery for Hackathon)
+    console.log(`Sending notification to evaluator: +919019320048`);
+    const evaluatorMsg = `[Evaluator Notice] UDID App ${id} (${app.name}) status changed to: ${nextStatus}`;
+    await sendWhatsApp("+919019320048", evaluatorMsg);
 
     res.json({ success: true, status: nextStatus });
   } catch (error) {
-    console.error(error);
+    console.error("Simulation error:", error);
     res.status(500).json({ error: "Simulation failed" });
   }
 });
