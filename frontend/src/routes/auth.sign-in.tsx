@@ -17,19 +17,38 @@ function SignIn() {
     return () => a11y.speak(text, "hover");
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const email = formData.get("id") as string;
+    const password = formData.get("pw") as string;
     
-    localStorage.setItem("db_session", role);
-    if (email) localStorage.setItem("db_user_id", email);
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("db_user_id", email);
+        localStorage.setItem("db_session", role);
+        
+        if (data.user.disability) a11y.setDisability(data.user.disability as any);
+        if (data.user.location) a11y.setLocation(data.user.location);
+        if (data.user.onboarded) a11y.setOnboarded(true);
 
-    if (role === "user") {
-      a11y.speak("Signed in. Welcome back.", "assistant");
-      navigate({ to: "/app/jobs" });
-    } else {
-      navigate({ to: "/app/employer" });
+        if (role === "user") {
+          a11y.speak("Signed in. Welcome back.", "assistant");
+          navigate({ to: "/app/jobs" });
+        } else {
+          navigate({ to: "/app/employer" });
+        }
+      } else {
+        alert(data.error || "Login failed");
+      }
+    } catch (err) {
+      alert("Backend connection failed");
     }
   }
 

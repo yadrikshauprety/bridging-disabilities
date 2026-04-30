@@ -15,22 +15,34 @@ function SignUp() {
 
   function fieldHover(t: string) { return () => a11y.speak(t, "hover"); }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const email = formData.get("email") as string;
+    const password = formData.get("pw") as string;
+    const name = formData.get("name") as string;
     
-    if (email) localStorage.setItem("db_user_id", email);
-
-    if (role === "user") {
-      a11y.speak("Account created. Let's set up your accessibility profile.", "assistant");
-      navigate({ to: "/onboarding" });
-    } else {
-      localStorage.setItem("db_session", "employer");
-      localStorage.removeItem("db_employer_badge");
-      localStorage.removeItem("db_inclusion_flags");
-      localStorage.removeItem("db_survey_skipped");
-      navigate({ to: "/app/employer" });
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, role }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem("db_user_id", email);
+        if (role === "user") {
+          a11y.speak("Account created. Let's set up your accessibility profile.", "assistant");
+          navigate({ to: "/onboarding" });
+        } else {
+          localStorage.setItem("db_session", "employer");
+          navigate({ to: "/app/employer" });
+        }
+      } else {
+        alert(data.error || "Signup failed");
+      }
+    } catch (err) {
+      alert("Backend connection failed");
     }
   }
 

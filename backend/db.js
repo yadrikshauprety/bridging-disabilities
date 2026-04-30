@@ -33,6 +33,20 @@ export async function getDb() {
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (jobId) REFERENCES jobs (id)
     );
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      name TEXT NOT NULL,
+      disability TEXT,
+      preferences TEXT, -- JSON string
+      aadhar TEXT,
+      pan TEXT,
+      trustedContact TEXT,
+      location TEXT,
+      onboarded INTEGER DEFAULT 0
+    );
+
     CREATE TABLE IF NOT EXISTS udid_applications (
       id TEXT PRIMARY KEY,
       userId TEXT NOT NULL,

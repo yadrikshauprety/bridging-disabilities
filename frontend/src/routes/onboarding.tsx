@@ -37,22 +37,48 @@ function Onboarding() {
 
   function pickDisability(d: Exclude<DisabilityType, null>) {
     a11y.setDisability(d);
-    if (d === "locomotor") {
-      a11y.setWheelchairMode(true); // Explicitly turn on continuous voice
-    }
+    if (d === "locomotor") a11y.setWheelchairMode(true);
     a11y.speak(`You selected ${d}. ${DISABILITIES.find(x => x.id === d)?.desc ?? ""}`, "assistant");
+    
+    const email = localStorage.getItem("db_user_id");
+    if (email) {
+      fetch(`http://localhost:5000/api/user/profile/${email}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ disability: d }),
+      });
+    }
     setTimeout(() => setStep(1), 700);
   }
 
   function pickLanguage(l: string) {
     a11y.setLanguage(l);
     a11y.speak(`Language set to ${l}.`, "assistant");
+    
+    const email = localStorage.getItem("db_user_id");
+    if (email) {
+      fetch(`http://localhost:5000/api/user/profile/${email}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preferences: JSON.stringify({ language: l }) }),
+      });
+    }
     setTimeout(() => setStep(2), 500);
   }
 
-  function setLocation(loc: string) {
+  async function setLocation(loc: string) {
     a11y.setLocation(loc);
     a11y.setOnboarded(true);
+    
+    const email = localStorage.getItem("db_user_id");
+    if (email) {
+      await fetch(`http://localhost:5000/api/user/profile/${email}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onboarded: 1, location: loc }), 
+      });
+    }
+
     const session = localStorage.getItem("db_session");
     if (session) {
       a11y.speak(`Location set to ${loc}. Taking you to jobs.`, "assistant");
