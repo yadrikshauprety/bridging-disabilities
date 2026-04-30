@@ -76,7 +76,10 @@ function CommunicationPage() {
           {QUICK_PHRASES.map((p) => (
             <button
               key={p}
-              onClick={() => a11y.speak(p, "user")}
+              onClick={() => {
+                setTts(p);
+                a11y.speak(p, "user");
+              }}
               aria-label={`Say: ${p}`}
               className="rounded-xl border-2 border-border bg-background p-3 text-left font-bold hover:border-primary"
             >

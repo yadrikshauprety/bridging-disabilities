@@ -25,14 +25,17 @@ export const SCHEMES = [
 ];
 
 export const QUICK_PHRASES = [
-  "I need help",
-  "I cannot hear you",
-  "Please speak slowly",
+  "Hello",
+  "Welcome",
   "Thank you",
-  "Where is the toilet?",
-  "Call my emergency contact",
-  "I am lost",
-  "Please write it down",
+  "I need help",
+  "I'm looking for work",
+  "Tell me about the interview",
+  "What is the salary?",
+  "I have experience",
+  "Yes",
+  "I am happy",
+  "Can I introduce myself?",
 ];
 
 export const SIGN_PHRASES = [

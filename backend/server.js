@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 import jobsRouter from "./routes/jobs.js";
 import mlRouter from "./routes/ml.js";
 import interviewsRouter from "./routes/interviews.js";

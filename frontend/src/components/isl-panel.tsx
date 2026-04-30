@@ -1,10 +1,22 @@
 import { useA11y } from "@/lib/accessibility-context";
 import { useEffect, useState } from "react";
 
-/**
- * Mock ISL (Indian Sign Language) avatar panel.
- * Cycles through a friendly waving animation and shows the current "sign" label.
- */
+const SIGN_MAP: Record<string, string> = {
+  hello: "/dataset/Hello.mp4",
+  welcome: "/dataset/Welcome_(Reply_to_Thanks).mp4",
+  thanks: "/dataset/Thank_You_(Sign_2).mp4",
+  thank: "/dataset/Thank_You_(Sign_2).mp4",
+  work: "/dataset/Work.mp4",
+  help: "/dataset/Help.mp4",
+  interview: "/dataset/Interview.mp4",
+  salary: "/dataset/Salary.mp4",
+  experience: "/dataset/Experience.mp4",
+  yes: "/dataset/Yes.mp4",
+  happy: "/dataset/Happy.mp4",
+  introduce: "/dataset/Introduce.mp4",
+  yourself: "/dataset/Yourself.mp4",
+};
+
 export function ISLPanel({ text, autoOpen = false }: { text?: string; autoOpen?: boolean }) {
   const { disability } = useA11y();
   const [open, setOpen] = useState(autoOpen || disability === "hearing");
@@ -16,7 +28,10 @@ export function ISLPanel({ text, autoOpen = false }: { text?: string; autoOpen?:
     return () => clearInterval(id);
   }, [open]);
 
-  const poses = ["🙋", "🤟", "👐", "✌️"];
+  const lowerText = text?.toLowerCase() || "";
+  const videoSrc = Object.keys(SIGN_MAP).find((k) => lowerText.includes(k))
+    ? SIGN_MAP[Object.keys(SIGN_MAP).find((k) => lowerText.includes(k))!]
+    : null;
 
   if (!open) {
     return (
@@ -34,7 +49,7 @@ export function ISLPanel({ text, autoOpen = false }: { text?: string; autoOpen?:
     <div
       role="region"
       aria-label="Indian Sign Language avatar panel"
-      className="fixed bottom-44 right-4 z-40 w-64 rounded-2xl bg-card border-2 border-warm shadow-warm p-4"
+      className="fixed bottom-44 right-4 z-40 w-64 rounded-2xl bg-card border-2 border-warm shadow-warm p-4 overflow-hidden"
     >
       <div className="flex items-center justify-between mb-2">
         <span className="font-bold text-sm">🤟 ISL Avatar</span>
@@ -46,8 +61,12 @@ export function ISLPanel({ text, autoOpen = false }: { text?: string; autoOpen?:
           Hide
         </button>
       </div>
-      <div className="bg-warm/30 rounded-xl aspect-square flex items-center justify-center text-7xl">
-        <span className="animate-float">{poses[frame]}</span>
+      <div className="bg-warm/30 rounded-xl aspect-square flex items-center justify-center relative overflow-hidden">
+        {videoSrc ? (
+          <video src={videoSrc} autoPlay muted loop className="w-full h-full object-cover" />
+        ) : (
+          <span className="animate-float text-7xl">{["🙋", "🤟", "👐", "✌️"][frame]}</span>
+        )}
       </div>
       <p className="text-xs text-center mt-2 text-muted-foreground">
         {text ? `Signing: "${text}"` : "Demo signing"}

@@ -11,7 +11,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Helper to call Groq via native fetch
-async function callGroq(messages, model = "llama3-8b-8192", max_tokens = 800) {
+async function callGroq(messages, model = "llama-3.3-70b-versatile", max_tokens = 800) {
   if (!process.env.GROQ_API_KEY) {
     throw new Error("GROQ_API_KEY is not set in backend/.env");
   }
@@ -68,8 +68,8 @@ router.post("/extract-aadhaar", upload.single("image"), async (req, res) => {
     ];
 
     try {
-      // Use LLaMA 3.2 Vision model for image analysis on Groq
-      const resultText = await callGroq(messages, "llama-3.2-11b-vision-preview", 500);
+      // Use Llama 4 Scout for image analysis on Groq (current active multimodal model)
+      const resultText = await callGroq(messages, "meta-llama/llama-4-scout-17b-16e-instruct", 500);
       const jsonStr = resultText.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(jsonStr);
       res.json(parsed);
@@ -152,19 +152,27 @@ router.post("/medical-authority", async (req, res) => {
 // Helper for Twilio
 const sendWhatsApp = async (to, body) => {
   try {
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+    const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER } = process.env;
+
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) {
       console.log(`[MOCK WHATSAPP]: ${body}`);
       return;
     }
-    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    const from = process.env.TWILIO_WHATSAPP_NUMBER || "whatsapp:+14155238886";
-    // HARDCODED for Evaluator/Hackathon Demo
-    const toFormatted = "whatsapp:+919019320048";
+    const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+    const from = TWILIO_WHATSAPP_NUMBER || "whatsapp:+14155238886";
     
-    await client.messages.create({ from, to: toFormatted, body });
-    console.log(`WhatsApp sent to ${toFormatted}`);
+    // Use the passed 'to' number, or fallback to the demo number if 'to' is invalid/missing
+    let target = to;
+    if (!target || !target.startsWith("+")) {
+      target = "+919019320048"; // Fallback demo number
+    }
+    
+    const toFormatted = target.startsWith("whatsapp:") ? target : `whatsapp:${target}`;
+    
+    const message = await client.messages.create({ from, to: toFormatted, body });
+    console.log(`WhatsApp sent to ${toFormatted}. SID: ${message.sid}`);
   } catch (e) {
-    console.error("Twilio Error:", e.message);
+    console.error("Twilio Error sending to WhatsApp:", e.message);
   }
 };
 
