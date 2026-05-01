@@ -96,4 +96,35 @@ router.post("/recognize-sign", async (req, res) => {
   }
 });
 
+router.post("/cleanup-captions", async (req, res) => {
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: "No text provided" });
+
+  try {
+    const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant for an accessibility interview bridge. You will receive choppy real-time transcription from a video call. Your task is to clean it up into a clear, professional sentence while preserving the original meaning. If it's already clear, just return it. Output ONLY the cleaned-up text."
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ],
+      temperature: 0.1,
+    }, {
+      headers: {
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+    });
+
+    res.json({ text: response.data.choices[0].message.content.trim() });
+  } catch (error) {
+    console.error("Cleanup failed:", error);
+    res.json({ text }); // Fallback to raw text
+  }
+});
+
 export default router;

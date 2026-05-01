@@ -2,6 +2,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import appCss from "../styles.css?url";
 import { AccessibilityProvider } from "@/lib/accessibility-context";
 import { HoverSpeakRoot } from "@/components/hover-speak";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -76,6 +77,7 @@ function RootComponent() {
     <AccessibilityProvider>
       <HoverSpeakRoot>
         <Outlet />
+        <Toaster />
       </HoverSpeakRoot>
     </AccessibilityProvider>
   );

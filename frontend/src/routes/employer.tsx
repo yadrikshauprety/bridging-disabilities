@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { SurveyModal } from "@/components/employer-survey";
+import { supabase } from "@/features/interview-bridge/lib/supabase";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/employer")({
   head: () => ({ meta: [{ title: "Employer Portal — DisabilityBridge" }] }),
@@ -132,6 +134,55 @@ function EmployerPortal() {
       }
     } catch {}
     setPosting(false);
+  }
+
+  async function moveToRound2(int: Interview) {
+    const meetLink = window.prompt("Enter the Google Meet or Zoom link for this session:", "https://meet.google.com/abc-defg-hij");
+    if (!meetLink) return;
+
+    console.log("Moving to Round 2 with link:", meetLink);
+    try {
+      // 1. Create session
+      const { data: session, error: sError } = await supabase
+        .from("interview_sessions")
+        .insert({
+          employer_id: "emp_1",
+          candidate_id: int.candidateId,
+          candidate_name: int.candidateId, 
+          job_title: int.jobTitle,
+          status: "pending"
+        })
+        .select()
+        .single();
+
+      if (sError) {
+        console.error("Session creation error:", sError);
+        throw sError;
+      }
+
+      // 2. Create notification for EMPLOYER (Confirmation)
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: "emp_1",
+          session_id: session.id,
+          message: `Round 2 session created for ${int.candidateId}. Meeting: ${meetLink}`
+        });
+
+      // 3. Create notification for CANDIDATE (Invitation)
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: int.candidateId, 
+          session_id: session.id,
+          message: `Congratulations! Round 2 for ${int.jobTitle}. Join Meeting: ${meetLink} -- Then open your Interview Bridge.`
+        });
+
+      toast.success("Candidate moved to Round 2! Invitation with Meet link sent.");
+    } catch (err: any) {
+      console.error("Full error object:", err);
+      toast.error(`Failed to move candidate to Round 2: ${err.message || 'Unknown error'}`);
+    }
   }
 
   return (
@@ -297,7 +348,15 @@ function EmployerPortal() {
                       <h3 className="font-black text-lg">{int.jobTitle}</h3>
                       <p className="text-sm text-gray-500">Candidate: {int.candidateId} · {new Date(int.timestamp).toLocaleString("en-IN")}</p>
                     </div>
-                    <button onClick={() => downloadTranscriptPDF(int)} className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition text-sm">⬇ Download PDF</button>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => moveToRound2(int)}
+                        className="bg-green-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-green-700 transition text-sm"
+                      >
+                        🚀 Move to Round 2
+                      </button>
+                      <button onClick={() => downloadTranscriptPDF(int)} className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition text-sm">⬇ Download PDF</button>
+                    </div>
                   </div>
                   <div className="px-6 py-5 space-y-4">
                     {int.transcript.map((t, i) => (

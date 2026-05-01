@@ -28,6 +28,8 @@ import { Route as AppInterviewRouteImport } from './routes/app.interview'
 import { Route as AppEmployerRouteImport } from './routes/app.employer'
 import { Route as AppCommunityRouteImport } from './routes/app.community'
 import { Route as AppCommunicationRouteImport } from './routes/app.communication'
+import { Route as SessionIdEmployerRouteImport } from './routes/session.$id.employer'
+import { Route as SessionIdCandidateRouteImport } from './routes/session.$id.candidate'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -124,6 +126,16 @@ const AppCommunicationRoute = AppCommunicationRouteImport.update({
   path: '/communication',
   getParentRoute: () => AppRoute,
 } as any)
+const SessionIdEmployerRoute = SessionIdEmployerRouteImport.update({
+  id: '/session/$id/employer',
+  path: '/session/$id/employer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionIdCandidateRoute = SessionIdCandidateRouteImport.update({
+  id: '/session/$id/candidate',
+  path: '/session/$id/candidate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,6 +157,8 @@ export interface FileRoutesByFullPath {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
+  '/session/$id/candidate': typeof SessionIdCandidateRoute
+  '/session/$id/employer': typeof SessionIdEmployerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -165,6 +179,8 @@ export interface FileRoutesByTo {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app': typeof AppIndexRoute
+  '/session/$id/candidate': typeof SessionIdCandidateRoute
+  '/session/$id/employer': typeof SessionIdEmployerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -187,6 +203,8 @@ export interface FileRoutesById {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
+  '/session/$id/candidate': typeof SessionIdCandidateRoute
+  '/session/$id/employer': typeof SessionIdEmployerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -210,6 +228,8 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
+    | '/session/$id/candidate'
+    | '/session/$id/employer'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -230,6 +250,8 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app'
+    | '/session/$id/candidate'
+    | '/session/$id/employer'
   id:
     | '__root__'
     | '/'
@@ -251,6 +273,8 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
+    | '/session/$id/candidate'
+    | '/session/$id/employer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -262,6 +286,8 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
+  SessionIdCandidateRoute: typeof SessionIdCandidateRoute
+  SessionIdEmployerRoute: typeof SessionIdEmployerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -399,6 +425,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCommunicationRouteImport
       parentRoute: typeof AppRoute
     }
+    '/session/$id/employer': {
+      id: '/session/$id/employer'
+      path: '/session/$id/employer'
+      fullPath: '/session/$id/employer'
+      preLoaderRoute: typeof SessionIdEmployerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/session/$id/candidate': {
+      id: '/session/$id/candidate'
+      path: '/session/$id/candidate'
+      fullPath: '/session/$id/candidate'
+      preLoaderRoute: typeof SessionIdCandidateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -441,6 +481,8 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
+  SessionIdCandidateRoute: SessionIdCandidateRoute,
+  SessionIdEmployerRoute: SessionIdEmployerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

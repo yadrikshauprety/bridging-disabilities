@@ -7,6 +7,7 @@ import { SOSButton } from "@/components/sos-button";
 import { ISLPanel } from "@/components/isl-panel";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { matchVoiceCommand } from "@/lib/voice-router";
+import { NotificationBell } from "@/features/interview-bridge/components/NotificationBell";
 
 const NAV = [
   { to: "/app", label: "Home", icon: "🏠", exact: true },
@@ -82,15 +83,18 @@ export function PortalLayout() {
           <Link to="/" className="flex items-center gap-2 font-black" aria-label="DisabilityBridge home">
             <span className="text-2xl" aria-hidden>🌉</span> DisabilityBridge
           </Link>
-          <button
-            onClick={() => {
-              localStorage.removeItem("db_session");
-              navigate({ to: "/auth/sign-in" });
-            }}
-            className="text-sm font-bold text-muted-foreground hover:text-foreground transition"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-4">
+            <NotificationBell userId="emp_1" />
+            <button
+              onClick={() => {
+                localStorage.removeItem("db_session");
+                navigate({ to: "/auth/sign-in" });
+              }}
+              className="text-sm font-bold text-muted-foreground hover:text-foreground transition"
+            >
+              Log out
+            </button>
+          </div>
         </header>
         <main id="main" className="flex-1 px-4 md:px-8 py-6">
           <Outlet />
@@ -101,6 +105,13 @@ export function PortalLayout() {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
+      <header className="md:hidden sticky top-0 z-30 bg-background/90 backdrop-blur border-b-2 border-border px-4 py-3 flex items-center justify-between">
+        <div className="font-black text-primary">🌉</div>
+          <div className="flex items-center gap-3">
+            <NotificationBell userId="pwd_candidate_1" />
+            <AccessibilityToolbar />
+          </div>
+      </header>
       {/* Sidebar (desktop) */}
       <aside
         aria-label="Main navigation"
@@ -167,6 +178,7 @@ export function PortalLayout() {
           >
             ♿ {a11y.wheelchairMode ? "Voice On" : "Voice Off"}
           </button>
+          <NotificationBell userId="pwd_candidate_1" />
           <AccessibilityToolbar />
         </header>
 
