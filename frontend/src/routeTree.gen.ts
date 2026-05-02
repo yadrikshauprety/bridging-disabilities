@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ModeratorRouteImport } from './routes/moderator'
 import { Route as EmployerRouteImport } from './routes/employer'
 import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as AppRouteImport } from './routes/app'
@@ -19,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AuthSignUpRouteImport } from './routes/auth.sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
+import { Route as AuthModeratorLoginRouteImport } from './routes/auth.moderator-login'
 import { Route as AppWalletRouteImport } from './routes/app.wallet'
 import { Route as AppUdidRouteImport } from './routes/app.udid'
 import { Route as AppScriptsRouteImport } from './routes/app.scripts'
@@ -41,6 +43,11 @@ const VerifyRoute = VerifyRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModeratorRoute = ModeratorRouteImport.update({
+  id: '/moderator',
+  path: '/moderator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmployerRoute = EmployerRouteImport.update({
@@ -81,6 +88,11 @@ const AuthSignUpRoute = AuthSignUpRouteImport.update({
 const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/auth/sign-in',
   path: '/auth/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthModeratorLoginRoute = AuthModeratorLoginRouteImport.update({
+  id: '/auth/moderator-login',
+  path: '/auth/moderator-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppWalletRoute = AppWalletRouteImport.update({
@@ -155,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/consent': typeof ConsentRoute
   '/employer': typeof EmployerRoute
+  '/moderator': typeof ModeratorRoute
   '/onboarding': typeof OnboardingRoute
   '/verify': typeof VerifyRoute
   '/app/communication': typeof AppCommunicationRoute
@@ -168,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
   '/app/wallet': typeof AppWalletRoute
+  '/auth/moderator-login': typeof AuthModeratorLoginRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
@@ -179,6 +193,7 @@ export interface FileRoutesByTo {
   '/agency': typeof AgencyRoute
   '/consent': typeof ConsentRoute
   '/employer': typeof EmployerRoute
+  '/moderator': typeof ModeratorRoute
   '/onboarding': typeof OnboardingRoute
   '/verify': typeof VerifyRoute
   '/app/communication': typeof AppCommunicationRoute
@@ -192,6 +207,7 @@ export interface FileRoutesByTo {
   '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
   '/app/wallet': typeof AppWalletRoute
+  '/auth/moderator-login': typeof AuthModeratorLoginRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app': typeof AppIndexRoute
@@ -205,6 +221,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/consent': typeof ConsentRoute
   '/employer': typeof EmployerRoute
+  '/moderator': typeof ModeratorRoute
   '/onboarding': typeof OnboardingRoute
   '/verify': typeof VerifyRoute
   '/app/communication': typeof AppCommunicationRoute
@@ -218,6 +235,7 @@ export interface FileRoutesById {
   '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
   '/app/wallet': typeof AppWalletRoute
+  '/auth/moderator-login': typeof AuthModeratorLoginRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
@@ -232,6 +250,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/consent'
     | '/employer'
+    | '/moderator'
     | '/onboarding'
     | '/verify'
     | '/app/communication'
@@ -245,6 +264,7 @@ export interface FileRouteTypes {
     | '/app/scripts'
     | '/app/udid'
     | '/app/wallet'
+    | '/auth/moderator-login'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
@@ -256,6 +276,7 @@ export interface FileRouteTypes {
     | '/agency'
     | '/consent'
     | '/employer'
+    | '/moderator'
     | '/onboarding'
     | '/verify'
     | '/app/communication'
@@ -269,6 +290,7 @@ export interface FileRouteTypes {
     | '/app/scripts'
     | '/app/udid'
     | '/app/wallet'
+    | '/auth/moderator-login'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app'
@@ -281,6 +303,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/consent'
     | '/employer'
+    | '/moderator'
     | '/onboarding'
     | '/verify'
     | '/app/communication'
@@ -294,6 +317,7 @@ export interface FileRouteTypes {
     | '/app/scripts'
     | '/app/udid'
     | '/app/wallet'
+    | '/auth/moderator-login'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
@@ -307,8 +331,10 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ConsentRoute: typeof ConsentRoute
   EmployerRoute: typeof EmployerRoute
+  ModeratorRoute: typeof ModeratorRoute
   OnboardingRoute: typeof OnboardingRoute
   VerifyRoute: typeof VerifyRoute
+  AuthModeratorLoginRoute: typeof AuthModeratorLoginRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
   SessionIdCandidateRoute: typeof SessionIdCandidateRoute
@@ -329,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moderator': {
+      id: '/moderator'
+      path: '/moderator'
+      fullPath: '/moderator'
+      preLoaderRoute: typeof ModeratorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/employer': {
@@ -385,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/sign-in'
       fullPath: '/auth/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/moderator-login': {
+      id: '/auth/moderator-login'
+      path: '/auth/moderator-login'
+      fullPath: '/auth/moderator-login'
+      preLoaderRoute: typeof AuthModeratorLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/wallet': {
@@ -519,8 +559,10 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ConsentRoute: ConsentRoute,
   EmployerRoute: EmployerRoute,
+  ModeratorRoute: ModeratorRoute,
   OnboardingRoute: OnboardingRoute,
   VerifyRoute: VerifyRoute,
+  AuthModeratorLoginRoute: AuthModeratorLoginRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
   SessionIdCandidateRoute: SessionIdCandidateRoute,

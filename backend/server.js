@@ -12,6 +12,7 @@ import userRouter from "./routes/user.js";
 import schemesRouter from "./routes/schemes.js";
 import mapsRouter from "./routes/maps.js";
 import employerRouter from "./routes/employer.js";
+import communityRouter from "./routes/community.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,6 +34,7 @@ app.use("/api/user", userRouter);
 app.use("/api/schemes", schemesRouter);
 app.use("/api/maps", mapsRouter);
 app.use("/api/employer", employerRouter);
+app.use("/api/community", communityRouter);
 
 app.listen(PORT, () => {
   console.log(`Backend server listening on port ${PORT}`);
