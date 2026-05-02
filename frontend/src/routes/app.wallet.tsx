@@ -1,33 +1,42 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import * as React from "react";
+import { useA11y } from "@/lib/accessibility-context";
 import { QRCodeSVG } from "qrcode.react";
 
 export const Route = createFileRoute("/app/wallet")({
-  component: Wallet,
+  head: () => ({ meta: [{ title: "Digital Wallet — DisabilityBridge" }] }),
+  component: DigitalWalletPage,
 });
 
-function Wallet() {
-  const [appData, setAppData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [tapping, setTapping] = useState(false);
-  const [receipt, setReceipt] = useState<string | null>(null);
+function DigitalWalletPage() {
+  const a11y = useA11y();
+  const [appData, setAppData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [tapping, setTapping] = React.useState(false);
+  const [receipt, setReceipt] = React.useState<string | null>(null);
 
-  useEffect(() => {
-    // In a real app, this would use the logged-in user's ID
-    const userId = "user_1"; 
+  const userId = typeof window !== "undefined" ? localStorage.getItem("db_user_id") || "user_1" : "user_1";
+
+  React.useEffect(() => {
     fetch(`http://localhost:5000/api/udid/user/${userId}`)
       .then(res => res.json())
       .then(data => {
-        if (!data.error) setAppData(data);
+        if (!data.error) {
+          setAppData(data);
+          if (data.status === "Card Generated" || data.status === "Approved") {
+            a11y.speak("Digital Wallet loaded. Your e-UDID card is ready to use.", "assistant");
+          }
+        }
       })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [userId]);
 
   const simulateNFCTap = async () => {
-    if (!appData) return;
+    if (!appData?.id) return;
     setTapping(true);
     setReceipt(null);
+    a11y.speak("Establishing secure NFC connection...", "assistant");
     
     // Simulate real-world delay for NFC handshake
     await new Promise(r => setTimeout(r, 2000));
@@ -39,11 +48,14 @@ function Wallet() {
       const data = await res.json();
       if (data.success) {
         setReceipt(data.receipt);
+        a11y.speak("Card verified successfully via NFC tap.", "system");
       } else {
+        a11y.speak("NFC verification failed.", "system");
         alert("Verification failed: " + data.error);
       }
     } catch (err) {
       console.error(err);
+      a11y.speak("NFC connection error.", "system");
     }
     setTapping(false);
   };

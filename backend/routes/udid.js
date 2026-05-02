@@ -301,6 +301,8 @@ router.post("/verify-tap/:id", async (req, res) => {
     }
 
     const verificationReceipt = `VERIFIED-${Math.floor(Date.now() / 1000)}-${id}`;
+    
+    // Notify Applicant
     await sendWhatsApp(app.phone, `🔔 Your UDID Digital Card was just used and verified successfully. Receipt: ${verificationReceipt}`);
 
     res.json({
