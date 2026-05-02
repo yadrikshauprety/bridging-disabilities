@@ -1,197 +1,131 @@
-<div align="center">
-
 # 🌉 DisabilityBridge
 
 ### An Accessibility-First Job Interview Platform for Persons with Disabilities in India
 
-*Voice on hover · Sign Language interviews · Employer job portal · PDF transcripts*
+*Voice on hover · Sign Language interviews · AI Government Schemes · SOS Alerts*
 
-[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org)
+[![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://python.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB.svg)](https://react.dev)
-[![MediaPipe](https://img.shields.io/badge/MediaPipe-Hands_Lite-FF6F00.svg)](https://mediapipe.dev)
-
-</div>
+[![Twilio](https://img.shields.io/badge/Twilio-WhatsApp-red.svg)](https://twilio.com)
 
 ---
 
-## What is DisabilityBridge?
-
-DisabilityBridge is a two-sided platform that connects **Persons with Disabilities (PWDs)** with **inclusive employers** through an accessible, sign-language-powered interview experience.
-
-| PWD Side | Employer Side |
-|---|---|
-| Voice reads every element on hover | Clean, standard dashboard — no accessibility noise |
-| Browse accessible job listings | Post jobs with custom interview questions |
-| Answer interview questions via hand signs | View structured transcripts for every candidate |
-| Real-time MediaPipe gesture recognition | Download transcripts as PDF with one click |
-| Captions panel + ISL support | No sign-up for demo — log in as Employer |
-
----
-
-## Architecture
-
-```
-bridging-disabilities/
-├── frontend/          # React 19 + Vite + TanStack Router
-│   └── src/
-│       ├── routes/
-│       │   ├── employer.tsx        ← Standalone Employer Portal (no PWD features)
-│       │   ├── app.interview.tsx   ← MediaPipe sign-language interview
-│       │   ├── app.jobs.tsx        ← PWD job listings
-│       │   ├── auth.sign-in.tsx    ← Role-based login
-│       │   └── onboarding.tsx      ← Voice-guided accessibility setup
-│       ├── components/
-│       │   ├── hover-speak.tsx     ← Global voice-on-hover engine
-│       │   └── portal-layout.tsx   ← PWD sidebar + captions + SOS
-│       └── lib/
-│           └── accessibility-context.tsx
-└── backend/           # Node.js + Express + SQLite
-    ├── server.js
-    ├── db.js                       ← SQLite schema (jobs + interviews)
-    └── routes/
-        ├── jobs.js                 ← CRUD for job listings
-        ├── interviews.js           ← Submit & fetch transcripts
-        └── ml.js                   ← LiST model pipeline endpoint
-```
-
----
-
-## How the Sign Language Interview Works
-
-1. **Employer** logs in → creates a job with custom interview questions
-2. **PWD Candidate** browses jobs → clicks *Start Interview* for a job
-3. Camera opens + **MediaPipe Hands Lite** loads in-browser (no server round-trip)
-4. Candidate holds a hand sign for ~1 second
-5. A **25-frame rolling majority vote** classifies the gesture (60% threshold to lock)
-6. The answer is spoken aloud, captioned, and added to the live transcript
-7. Candidate clicks **Submit Interview** → transcript saved to SQLite
-8. Employer opens **Applications** tab → reads transcript → clicks **⬇ Download PDF**
-
-### Supported Gestures
-
-| Sign | Meaning |
-|------|---------|
-| 🖐 Open palm | Yes |
-| ✊ Fist | No |
-| 👍 Thumbs up | Yes — Confident |
-| ✌️ Peace / Two fingers | Yes — Two years of experience |
-| ☝️ Pointing | Let me explain |
-| 🤟 I-Love-You | Thank you for the opportunity |
-
----
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) **v18 or higher**
-- A modern browser (Chrome recommended for MediaPipe)
+- **Node.js** (v18 or higher)
+- **Python** (3.9 or higher)
+- **Twilio Account** (for SOS WhatsApp alerts)
+- **Groq API Key** (for real-time transcription and AI cleanup)
+- **Tavily API Key** (for AI-powered government scheme searches)
 
-### 1. Clone the repo
+### 1. Clone and Install
 
 ```bash
+# Clone the repository
 git clone https://github.com/YOUR_USERNAME/bridging-disabilities.git
 cd bridging-disabilities
-```
 
-### 2. Install all dependencies
-
-```bash
-# Install root + frontend + backend in one go
+# Install all Node.js dependencies
 npm run install:all
 ```
 
-> Or manually: `npm install` in root, `frontend/`, and `backend/` folders.
+### 2. Python Environment Setup
 
-### 3. Run the app
+The backend relies on Python for sign language recognition and gesture analysis.
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+### 3. Environment Configuration
+
+Create `.env` files in both `frontend` and `backend` directories.
+
+#### **Backend (`backend/.env`)**
+```env
+# AI & Search
+GROQ_API_KEY=your_groq_key_here
+TAVILY_API_KEY=your_tavily_key_here
+
+# SOS Notifications (Twilio)
+TWILIO_ACCOUNT_SID=your_sid_here
+TWILIO_AUTH_TOKEN=your_token_here
+TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886 # Twilio Sandbox Number
+```
+
+#### **Frontend (`frontend/.env`)**
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 4. Run the Platform
+
+From the **root directory**, run:
 
 ```bash
 npm run dev
 ```
 
-This starts both servers concurrently:
-
-| Service | URL |
-|---------|-----|
-| **Frontend** (Vite) | http://localhost:5173 |
-| **Backend** (Express) | http://localhost:5000 |
+This starts:
+- **Frontend**: [http://localhost:5173](http://localhost:5173)
+- **Backend**: [http://localhost:5000](http://localhost:5000)
 
 ---
 
-## Usage Guide
+## 🚨 SOS Setup (WhatsApp)
 
-### As an Employer
+DisabilityBridge includes an emergency SOS feature. To receive alerts on your phone during testing:
 
-1. Open the app → click **Sign In**
-2. Select **🏢 Employer** tab → enter any credentials → click **Sign in**
-3. You land on the **Employer Portal** (separate from PWD experience)
-4. **Create Job** tab: enter job details, add interview questions → Post
-5. **Applications** tab: see candidate transcripts → Download PDF
-
-### As a PWD Candidate
-
-1. Open the app → click **Sign In**
-2. Select **👤 Person with Disability** → Sign in
-3. Complete the **voice-guided onboarding** (disability type, language, location)
-4. Browse **Jobs** → click **Start Interview** on a listing
-5. Allow camera access → click **▶ Start Camera** → **🤟 Start Detecting**
-6. Answer each question using the hand signs shown
-7. Click **✓ Submit Interview to Employer** when done
-
-> **Tip:** Hover over any button or text to hear it read aloud — the voice assistant is on by default.
+1. **Join the Twilio Sandbox**: Open WhatsApp on your phone and send `join glass-cow` (or your specific sandbox keyword) to **+1 415 523 8886**.
+2. **Configure Profile**: Sign in as a PWD user, go to **KYC Profile**, and set your phone number as the **Trusted Contact** (include country code, e.g., `+919019320048`).
+3. **Trigger**: Click the red SOS button. Your location and a plea for help will be sent to your contact instantly.
 
 ---
 
-## Tech Stack
+## 🛠 Tech Stack & Architecture
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend framework | React 19 + Vite |
-| Routing | TanStack Router (file-based) |
-| Sign language detection | MediaPipe Hands Lite (CDN) |
-| Gesture classification | Pure JS — 25-frame rolling buffer majority vote |
-| Accessibility | Web Speech API (TTS + STT) |
-| Backend | Node.js + Express |
-| Database | SQLite via `sqlite3` + `sqlite` |
-| Process management | `concurrently` |
+### Frontend
+- **React 19 + Vite**: Ultra-fast performance and modern UI.
+- **TanStack Router**: Type-safe navigation.
+- **Web Speech API**: Powers the voice-on-hover accessibility engine.
+- **MediaPipe Hands**: In-browser hand tracking for interviews.
 
----
+### Backend
+- **Express.js + SQLite**: Lightweight, file-based database for jobs and KYC.
+- **Python Bridge**: Executes `ml_service.py` for advanced gesture recognition.
+- **Twilio API**: Handles emergency communication via WhatsApp.
+- **Groq Llama 3**: AI-driven transcription cleanup and interview processing.
 
-## ML Model — LiST Architecture (Ready for Integration)
-
-The backend endpoint `/api/ml/recognize-sign` is structured as the **LiST (Lightweight ISL Translation)** pipeline:
-
-- **Input:** Full video frame buffer (WebM)
-- **Stage 1:** InceptionV3 feature extraction
-- **Stage 2:** Two-layer LSTM sequence decoder
-- **Output:** Full natural-language sentence
-
-Currently running a **mock decoder** for demo purposes. To plug in real weights:
-
-1. Place your INCLUDE-dataset `.tflite` or `.h5` model in `backend/models/`
-2. Replace the mock in `backend/routes/ml.js` with `@tensorflow/tfjs-node` inference
-
----
-
-## Environment Variables
-
-No environment variables are required to run the demo. For production:
-
-```env
-# backend/.env
-PORT=5000
-NODE_ENV=production
+### Directory Structure
+```
+bridging-disabilities/
+├── frontend/               # React Application
+│   └── src/
+│       ├── routes/         # Page components (Jobs, Interview, Profile)
+│       ├── components/     # A11y components (SOS Button, Voice Assistant)
+│       └── lib/            # Accessibility Context & Voice Router
+└── backend/                # Express Server
+    ├── routes/             # API Endpoints (Auth, SOS, ML, Schemes)
+    ├── ml_service.py       # Python bridge for gesture recognition
+    └── database.sqlite     # Local data storage
 ```
 
 ---
 
-## Contributing
+## ♿ Accessibility Features
 
-Pull requests are welcome! Please open an issue first to discuss what you'd like to change.
+- **Voice-on-Hover**: Every interactive element is read aloud automatically for visually impaired users.
+- **Sign Language Interviews**: Candidates can answer questions using hand gestures.
+- **Guided Onboarding**: A step-by-step voice-guided setup for PWD preferences.
+- **Smart Captions**: Real-time cleanup of interview transcripts using AI.
 
 ---
 
-## License
+## ⚖ License
 
-[MIT](LICENSE) © DisabilityBridge Team
+[MIT](LICENSE) © 2026 DisabilityBridge Team

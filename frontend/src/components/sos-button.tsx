@@ -11,12 +11,22 @@ export function SOSButton() {
     const userId = localStorage.getItem("db_user_id");
     if (userId) {
       try {
-        await fetch(`http://localhost:5000/api/user/sos/${userId}`, { method: "POST" });
+        const res = await fetch(`http://localhost:5000/api/user/sos/${encodeURIComponent(userId)}`, { method: "POST" });
+        const data = await res.json();
+        if (res.ok) {
+          speak("S O S triggered. Your location has been broadcast to your emergency contacts.", "system");
+        } else {
+          speak(data.error || "Failed to send SOS", "system");
+          setSent(false); // Reset to allow retry
+          return;
+        }
       } catch (err) {
         console.error("SOS Trigger failed", err);
+        speak("Could not reach SOS service.", "system");
+        setSent(false);
+        return;
       }
     }
-    speak("S O S triggered. Your location has been broadcast to your emergency contacts and the nearest disability rehabilitation centre.", "system");
     setTimeout(() => { setSent(false); setOpen(false); }, 5000);
   }
 

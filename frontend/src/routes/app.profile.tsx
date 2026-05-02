@@ -56,7 +56,7 @@ function ProfilePage() {
   async function triggerSOS() {
     if (!email) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/user/sos/${email}`, { method: "POST" });
+      const res = await fetch(`http://localhost:5000/api/user/sos/${encodeURIComponent(email)}`, { method: "POST" });
       const data = await res.json();
       if (res.ok) {
         a11y.speak("SOS WhatsApp alert sent to your trusted contact.", "system");
