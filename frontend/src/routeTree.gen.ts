@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AuthSignUpRouteImport } from './routes/auth.sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth.sign-in'
+import { Route as AppWalletRouteImport } from './routes/app.wallet'
 import { Route as AppUdidRouteImport } from './routes/app.udid'
 import { Route as AppScriptsRouteImport } from './routes/app.scripts'
 import { Route as AppSchemesRouteImport } from './routes/app.schemes'
@@ -75,6 +76,11 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/auth/sign-in',
   path: '/auth/sign-in',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppWalletRoute = AppWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppUdidRoute = AppUdidRouteImport.update({
   id: '/udid',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/app/schemes': typeof AppSchemesRoute
   '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
+  '/app/wallet': typeof AppWalletRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/app/schemes': typeof AppSchemesRoute
   '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
+  '/app/wallet': typeof AppWalletRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app': typeof AppIndexRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/app/schemes': typeof AppSchemesRoute
   '/app/scripts': typeof AppScriptsRoute
   '/app/udid': typeof AppUdidRoute
+  '/app/wallet': typeof AppWalletRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/app/': typeof AppIndexRoute
@@ -225,6 +234,7 @@ export interface FileRouteTypes {
     | '/app/schemes'
     | '/app/scripts'
     | '/app/udid'
+    | '/app/wallet'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/app/schemes'
     | '/app/scripts'
     | '/app/udid'
+    | '/app/wallet'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/app/schemes'
     | '/app/scripts'
     | '/app/udid'
+    | '/app/wallet'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/'
@@ -354,6 +366,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/wallet': {
+      id: '/app/wallet'
+      path: '/wallet'
+      fullPath: '/app/wallet'
+      preLoaderRoute: typeof AppWalletRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/udid': {
       id: '/app/udid'
@@ -453,6 +472,7 @@ interface AppRouteChildren {
   AppSchemesRoute: typeof AppSchemesRoute
   AppScriptsRoute: typeof AppScriptsRoute
   AppUdidRoute: typeof AppUdidRoute
+  AppWalletRoute: typeof AppWalletRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -467,6 +487,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSchemesRoute: AppSchemesRoute,
   AppScriptsRoute: AppScriptsRoute,
   AppUdidRoute: AppUdidRoute,
+  AppWalletRoute: AppWalletRoute,
   AppIndexRoute: AppIndexRoute,
 }
 

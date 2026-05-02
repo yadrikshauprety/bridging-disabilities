@@ -275,4 +275,32 @@ router.post("/simulate-status/:id", async (req, res) => {
   }
 });
 
+// 7. Verify NFC Tap (For Digital Wallet)
+router.post("/verify-tap/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = await getDb();
+    const app = await db.get("SELECT * FROM udid_applications WHERE id = ?", [id]);
+    
+    if (!app) return res.status(404).json({ success: false, error: "Invalid UDID" });
+    if (app.status !== "Card Generated") return res.status(400).json({ success: false, error: "Card not yet generated or invalid" });
+
+    // Mocking an NFC verification signature and logging
+    const verificationReceipt = `VERIFIED-${Math.floor(Date.now() / 1000)}-${id}`;
+    
+    // Send a WhatsApp notification
+    await sendWhatsApp(app.phone, `🔔 Your UDID Digital Card was just used and verified successfully. Receipt: ${verificationReceipt}`);
+
+    res.json({
+      success: true,
+      message: "Card verified successfully via NFC tap.",
+      receipt: verificationReceipt,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("NFC Verification error:", error);
+    res.status(500).json({ success: false, error: "Verification failed" });
+  }
+});
+
 export default router;
