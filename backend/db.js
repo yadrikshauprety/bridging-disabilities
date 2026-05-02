@@ -56,6 +56,40 @@ export async function getDb() {
       status TEXT DEFAULT 'Submitted',
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS places (
+      id TEXT PRIMARY KEY, -- OSM ID
+      name TEXT NOT NULL,
+      address TEXT,
+      lat REAL NOT NULL,
+      lng REAL NOT NULL,
+      type TEXT,
+      totalReviews INTEGER DEFAULT 0,
+      rampYesVotes INTEGER DEFAULT 0,
+      rampTotalVotes INTEGER DEFAULT 0,
+      toiletYesVotes INTEGER DEFAULT 0,
+      toiletTotalVotes INTEGER DEFAULT 0,
+      brailleYesVotes INTEGER DEFAULT 0,
+      brailleTotalVotes INTEGER DEFAULT 0,
+      audioYesVotes INTEGER DEFAULT 0,
+      audioTotalVotes INTEGER DEFAULT 0,
+      parkingYesVotes INTEGER DEFAULT 0,
+      parkingTotalVotes INTEGER DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS accessibility_reviews (
+      id TEXT PRIMARY KEY,
+      placeId TEXT NOT NULL,
+      userId TEXT NOT NULL,
+      rampLift INTEGER, -- 1 for Yes, 0 for No, NULL for Unsure
+      accessibleToilet INTEGER,
+      brailleSignage INTEGER,
+      audioAnnouncements INTEGER,
+      parking INTEGER,
+      comments TEXT,
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (placeId) REFERENCES places (id)
+    );
   `);
 
   return db;
