@@ -36,9 +36,10 @@ router.get("/employer/:employerId", async (req, res) => {
     const db = await getDb();
     // Join with jobs to get the job title
     const interviews = await db.all(`
-      SELECT i.*, j.title as jobTitle 
+      SELECT i.*, j.title as jobTitle, cr.status as decisionStatus
       FROM interviews i 
       JOIN jobs j ON i.jobId = j.id 
+      LEFT JOIN candidate_reviews cr ON cr.interviewId = i.id
       WHERE i.employerId = ?
       ORDER BY i.timestamp DESC
     `, [req.params.employerId]);
@@ -52,6 +53,62 @@ router.get("/employer/:employerId", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch interviews" });
+  }
+});
+
+// Update interview decision status
+router.post("/:interviewId/decision", async (req, res) => {
+  const { interviewId } = req.params;
+  const { employerId, status } = req.body;
+
+  if (!status || !['selected', 'rejected', 'applied', 'round2'].includes(status)) {
+    return res.status(400).json({ error: "Invalid status" });
+  }
+
+  try {
+    const db = await getDb();
+    
+    // 1. Get current status to see if we need to update counts
+    const currentReview = await db.get(
+      "SELECT status FROM candidate_reviews WHERE interviewId = ?",
+      [interviewId]
+    );
+    const oldStatus = currentReview?.status || 'applied';
+
+    if (oldStatus === status) {
+      return res.json({ success: true, status, message: "Status unchanged" });
+    }
+
+    // 2. Update or Insert candidate review
+    await db.run(
+      `INSERT INTO candidate_reviews (interviewId, employerId, status, updatedAt)
+       VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(interviewId) DO UPDATE SET status = excluded.status, updatedAt = CURRENT_TIMESTAMP`,
+      [interviewId, employerId, status]
+    );
+
+    // 3. Update employer_info counts
+    // We increment if moving TO selected, decrement if moving FROM selected
+    let increment = 0;
+    if (status === 'selected' && oldStatus !== 'selected') increment = 1;
+    else if (oldStatus === 'selected' && status !== 'selected') increment = -1;
+
+    if (increment !== 0) {
+      // Ensure employer_info exists
+      const info = await db.get("SELECT employerId FROM employer_info WHERE employerId = ?", [employerId]);
+      if (!info) {
+        await db.run("INSERT INTO employer_info (employerId, totalEmployees, pwdEmployees) VALUES (?, 0, 0)", [employerId]);
+      }
+      await db.run(
+        `UPDATE employer_info SET pwdEmployees = MAX(0, COALESCE(pwdEmployees, 0) + ?) WHERE employerId = ?`,
+        [increment, employerId]
+      );
+    }
+
+    res.json({ success: true, status, oldStatus });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update decision" });
   }
 });
 

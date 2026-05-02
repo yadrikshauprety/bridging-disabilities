@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import { SurveyModal } from "@/components/employer-survey";
 import { supabase } from "@/features/interview-bridge/lib/supabase";
 import { toast } from "sonner";
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
+import { NotificationBell } from "@/features/interview-bridge/components/NotificationBell";
+
 
 export const Route = createFileRoute("/employer")({
   head: () => ({ meta: [{ title: "Employer Portal — DisabilityBridge" }] }),
@@ -11,7 +15,22 @@ export const Route = createFileRoute("/employer")({
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Question = { q: string; expects: string[]; hint: string };
-type Interview = { id: string; candidateId: string; jobTitle: string; timestamp: string; transcript: { q: string; a: string; gesture?: string }[] };
+type Interview = { id: string; candidateId: string; jobTitle: string; timestamp: string; transcript: { q: string; a: string; gesture?: string }[]; decisionStatus?: "applied" | "selected" | "rejected"; decisionAt?: string };
+type DeiAnalytics = {
+  employerId: string;
+  totalEmployees: number;
+  currentPwdEmployees: number;
+  selectedCandidatesThisQuarter: number;
+  projectedPwdEmployees: number;
+  pwdCompliancePercentage: number;
+  mandatePercentage: number;
+  complianceStatus: "On Track" | "Below Target";
+  totalInterviewedCandidates: number;
+  selectionRate: number;
+  latestAuditScore: number;
+  quarterTrend: { quarter: string; compliance: number; hiringRate: number; improvements: number }[];
+  latestAuditAt: string | null;
+};
 
 // ─── PDF Generator ───────────────────────────────────────────────────────────
 function downloadTranscriptPDF(interview: Interview) {
@@ -51,7 +70,8 @@ function downloadTranscriptPDF(interview: Interview) {
 }
 
 function EmployerPortal() {
-  const [tab, setTab] = useState<"create" | "applications">("create");
+  const [tab, setTab] = useState<"create" | "applications" | "dei">("dei");
+  const employerId = "emp_1";
 
   // Form state
   const [title, setTitle] = useState("");
@@ -61,6 +81,7 @@ function EmployerPortal() {
   const [newQ, setNewQ] = useState("");
   const [posting, setPosting] = useState(false);
   const [postSuccess, setPostSuccess] = useState(false);
+  const [movingToRound2, setMovingToRound2] = useState<string | null>(null);
 
   // Applications state
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -68,6 +89,16 @@ function EmployerPortal() {
   const [showSurvey, setShowSurvey] = useState(false);
   const [hasBadge, setHasBadge] = useState(false);
   const [inclusionFlags, setInclusionFlags] = useState<Record<number, boolean>>({});
+  
+  // DEI analytics state
+  const [deiAnalytics, setDeiAnalytics] = useState<DeiAnalytics | null>(null);
+  const [deiLoading, setDeiLoading] = useState(false);
+  const [deiError, setDeiError] = useState<string | null>(null);
+
+  // Company info state
+  const [totalEmployees, setTotalEmployees] = useState<number>(0);
+  const [pwdEmployees, setPwdEmployees] = useState<number>(0);
+  const [savingCompanyInfo, setSavingCompanyInfo] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("db_employer_badge");
@@ -85,19 +116,125 @@ function EmployerPortal() {
     if (earned) localStorage.setItem("db_employer_badge", "true");
     localStorage.setItem("db_inclusion_flags", JSON.stringify(answers));
     setShowSurvey(false);
+    void saveAudit(answers);
   };
 
   useEffect(() => {
+    loadInterviews();
+    loadDeiAnalytics();
+    loadCompanyInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (tab === "applications") loadInterviews();
+    if (tab === "dei") loadDeiAnalytics();
   }, [tab]);
 
   async function loadInterviews() {
     setLoadingInt(true);
     try {
-      const res = await fetch("http://localhost:5000/api/interviews/employer/emp_1");
+      const res = await fetch(`/api/interviews/employer/${employerId}`);
       if (res.ok) setInterviews(await res.json());
     } catch {}
     setLoadingInt(false);
+  }
+
+  async function loadDeiAnalytics() {
+    setDeiLoading(true);
+    setDeiError(null);
+    try {
+      const res = await fetch(`/api/employer/dei/${employerId}`);
+      if (!res.ok) throw new Error("Failed to load DEI analytics");
+      setDeiAnalytics(await res.json());
+    } catch (error: any) {
+      setDeiError(error?.message || "Failed to load DEI analytics");
+    } finally {
+      setDeiLoading(false);
+    }
+  }
+
+  async function loadCompanyInfo() {
+    try {
+      const res = await fetch(`/api/employer/company-info/${employerId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setTotalEmployees(data.totalEmployees || 0);
+        setPwdEmployees(data.pwdEmployees || 0);
+      }
+    } catch (error) {
+      console.error("Failed to load company info:", error);
+    }
+  }
+
+  async function saveCompanyInfo() {
+    if (!totalEmployees || totalEmployees <= 0) {
+      toast.error("Total employees must be greater than 0");
+      return;
+    }
+
+    setSavingCompanyInfo(true);
+    try {
+      const res = await fetch(`/api/employer/company-info/${employerId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ totalEmployees, pwdEmployees }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save company info");
+
+      toast.success("Company information saved!");
+      loadDeiAnalytics();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to save company information");
+    } finally {
+      setSavingCompanyInfo(false);
+    }
+  }
+
+  async function saveAudit(answers: Record<number, boolean>) {
+    try {
+      await fetch(`/api/employer/audit/${employerId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers }),
+      });
+      loadDeiAnalytics();
+    } catch {
+      // Keep the UI usable even if analytics persistence fails.
+    }
+  }
+
+  async function updateDecision(interviewId: string, status: "selected" | "rejected" | "round2") {
+    try {
+      const res = await fetch(`/api/interviews/${interviewId}/decision`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employerId, status }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update candidate decision");
+
+      const successMsg = status === 'selected' ? 'selected' : status === 'rejected' ? 'rejected' : 'moved to Round 2';
+      toast.success(`Candidate ${successMsg} successfully!`);
+
+      await Promise.all([loadInterviews(), loadDeiAnalytics(), loadCompanyInfo()]);
+    } catch (error: any) {
+      console.error("Decision Update Error:", error);
+      toast.error(error?.message || "Failed to update candidate decision");
+    }
+  }
+
+  async function seedMockData() {
+    try {
+      const res = await fetch(`/api/employer/seed-dei/${employerId}`, { method: "POST" });
+      if (!res.ok) throw new Error("Failed to seed data");
+      toast.success("Demo DEI data seeded successfully! Analytics updated.");
+      loadDeiAnalytics();
+      loadCompanyInfo();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
   }
 
   function addQuestion() {
@@ -114,14 +251,14 @@ function EmployerPortal() {
     e.preventDefault();
     setPosting(true);
     try {
-      const res = await fetch("http://localhost:5000/api/jobs", {
+      const res = await fetch(`/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           title, 
           company, 
           description, 
-          employerId: "emp_1", 
+          employerId, 
           questions, 
           hasBadge: hasBadge ? 1 : 0,
           inclusionFlags: JSON.stringify(inclusionFlags)
@@ -140,13 +277,14 @@ function EmployerPortal() {
     const meetLink = window.prompt("Enter the Google Meet or Zoom link for this session:", "https://meet.google.com/abc-defg-hij");
     if (!meetLink) return;
 
-    console.log("Moving to Round 2 with link:", meetLink);
+    setMovingToRound2(int.id);
     try {
-      // 1. Create session
+      console.log("Moving candidate to Round 2...", int.candidateId);
+      
       const { data: session, error: sError } = await supabase
         .from("interview_sessions")
         .insert({
-          employer_id: "emp_1",
+          employer_id: employerId,
           candidate_id: int.candidateId,
           candidate_name: int.candidateId, 
           job_title: int.jobTitle,
@@ -155,35 +293,72 @@ function EmployerPortal() {
         .select()
         .single();
 
-      if (sError) {
-        console.error("Session creation error:", sError);
-        throw sError;
-      }
+      if (sError) throw new Error(`Supabase Session Error: ${sError.message}`);
 
-      // 2. Create notification for EMPLOYER (Confirmation)
-      await supabase
-        .from("notifications")
-        .insert({
-          user_id: "emp_1",
-          session_id: session.id,
-          message: `Round 2 session created for ${int.candidateId}. Meeting: ${meetLink}`
-        });
+      // Update the local DB status to 'round2'
+      await updateDecision(int.id, "round2");
 
-      // 3. Create notification for CANDIDATE (Invitation)
-      await supabase
-        .from("notifications")
-        .insert({
-          user_id: int.candidateId, 
-          session_id: session.id,
-          message: `Congratulations! Round 2 for ${int.jobTitle}. Join Meeting: ${meetLink} -- Then open your Interview Bridge.`
-        });
+      const { error: nError } = await supabase.from("notifications").insert([
+        { user_id: employerId, session_id: session.id, message: `Round 2 session created for ${int.candidateId}. Meeting: ${meetLink}` },
+        { user_id: int.candidateId, session_id: session.id, message: `Congratulations! Round 2 for ${int.jobTitle}. Join Meeting: ${meetLink}` }
+      ]);
 
-      toast.success("Candidate moved to Round 2! Invitation with Meet link sent.");
+      if (nError) console.warn("Notification Error:", nError.message);
+
+      toast.success("Candidate moved to Round 2! Invitation sent.");
     } catch (err: any) {
-      console.error("Full error object:", err);
-      toast.error(`Failed to move candidate to Round 2: ${err.message || 'Unknown error'}`);
+      console.error("Move to Round 2 Failed:", err);
+      toast.error(`Failed to move candidate: ${err.message || 'Unknown error'}`);
+    } finally {
+      setMovingToRound2(null);
     }
   }
+
+  const deiQuarterData = deiAnalytics?.quarterTrend ?? [];
+  const latestQuarter = deiQuarterData.at(-1) ?? null;
+  
+  const decisionSplit = deiAnalytics && deiAnalytics.totalInterviewedCandidates > 0
+    ? [
+        { name: "Selected", value: deiAnalytics.selectedCandidatesThisQuarter },
+        { name: "Other", value: Math.max(0, deiAnalytics.totalInterviewedCandidates - deiAnalytics.selectedCandidatesThisQuarter) },
+      ]
+    : [];
+
+  const workforceDiversity = deiAnalytics && deiAnalytics.totalEmployees > 0
+    ? [
+        { name: "PwD Employees", value: deiAnalytics.currentPwdEmployees },
+        { name: "Non-PwD Employees", value: Math.max(0, deiAnalytics.totalEmployees - deiAnalytics.currentPwdEmployees) },
+      ]
+    : [];
+
+  const deiHighlights = deiAnalytics
+    ? [
+        {
+          label: "Company Total Employees",
+          value: `${deiAnalytics.totalEmployees}`,
+          sub: `Current PwD employees: ${deiAnalytics.currentPwdEmployees}`,
+          trend: deiAnalytics.totalEmployees > 0 ? "Real-time count" : "Configure in settings",
+        },
+        {
+          label: "Candidates Interviewed",
+          value: `${deiAnalytics.totalInterviewedCandidates}`,
+          sub: `${deiAnalytics.selectedCandidatesThisQuarter} candidate selection(s)`,
+          trend: `Rate: ${deiAnalytics.selectionRate}%`,
+        },
+        {
+          label: "RPwD Compliance %",
+          value: `${deiAnalytics.pwdCompliancePercentage.toFixed(1)}%`,
+          sub: `Target: ${deiAnalytics.mandatePercentage}% (RPwD Mandate)`,
+          trend: deiAnalytics.complianceStatus === "On Track" ? "✅ On Track" : "⚠️ Below Target",
+        },
+        {
+          label: "Latest Audit Score",
+          value: `${deiAnalytics.latestAuditScore}/100`,
+          sub: deiAnalytics.latestAuditAt ? `Audit on ${new Date(deiAnalytics.latestAuditAt).toLocaleDateString("en-IN")}` : "No audit saved",
+          trend: `${deiAnalytics.quarterTrend.length} recorded quarters`,
+        },
+      ]
+    : [];
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-gray-900">
@@ -196,7 +371,8 @@ function EmployerPortal() {
             <h1 className="text-xl font-black text-gray-900">Employer Portal</h1>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          <NotificationBell userId={employerId} />
           <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
             <button
               onClick={() => setTab("create")}
@@ -209,6 +385,12 @@ function EmployerPortal() {
               className={`px-4 py-2 rounded-lg font-bold text-sm transition ${tab === "applications" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
             >
               📥 Applications {interviews.length > 0 && `(${interviews.length})`}
+            </button>
+            <button
+              onClick={() => setTab("dei")}
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition ${tab === "dei" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              📊 DEI Dashboard
             </button>
           </div>
           <button
@@ -347,15 +529,43 @@ function EmployerPortal() {
                     <div>
                       <h3 className="font-black text-lg">{int.jobTitle}</h3>
                       <p className="text-sm text-gray-500">Candidate: {int.candidateId} · {new Date(int.timestamp).toLocaleString("en-IN")}</p>
+                      <p className="text-xs font-bold uppercase tracking-wider mt-2 text-gray-500">
+                        Status: <span className={
+                          int.decisionStatus === "selected" ? "text-green-600" : 
+                          int.decisionStatus === "rejected" ? "text-red-600" : 
+                          int.decisionStatus === "round2" ? "text-blue-600" :
+                          "text-amber-600"
+                        }>
+                          {int.decisionStatus === "round2" ? "Moved to Round 2" : (int.decisionStatus || "Applied")}
+                        </span>
+                      </p>
                     </div>
                     <div className="flex gap-2">
+                      <button
+                        onClick={() => updateDecision(int.id, "selected")}
+                        className="bg-green-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-green-700 transition text-sm disabled:opacity-50"
+                        disabled={int.decisionStatus === "selected"}
+                      >
+                        {int.decisionStatus === "selected" ? "✅ Selected" : "✅ Select"}
+                      </button>
+                      <button
+                        onClick={() => updateDecision(int.id, "rejected")}
+                        className="bg-red-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-red-700 transition text-sm disabled:opacity-50"
+                        disabled={int.decisionStatus === "rejected"}
+                      >
+                        {int.decisionStatus === "rejected" ? "❌ Rejected" : "❌ Reject"}
+                      </button>
                       <button 
                         onClick={() => moveToRound2(int)}
-                        className="bg-green-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-green-700 transition text-sm"
+                        className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition text-sm disabled:opacity-50 flex items-center gap-2"
+                        disabled={movingToRound2 === int.id}
                       >
-                        🚀 Move to Round 2
+                        {movingToRound2 === int.id ? (
+                          <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : "🚀"}
+                        {int.decisionStatus === "round2" ? "Move to Round 3" : "Move to Round 2"}
                       </button>
-                      <button onClick={() => downloadTranscriptPDF(int)} className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition text-sm">⬇ Download PDF</button>
+                      <button onClick={() => downloadTranscriptPDF(int)} className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-blue-700 transition text-sm">⬇ PDF</button>
                     </div>
                   </div>
                   <div className="px-6 py-5 space-y-4">
@@ -369,6 +579,234 @@ function EmployerPortal() {
                   </div>
                 </article>
               ))}
+            </div>
+          </div>
+        )}
+
+        {tab === "dei" && (
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-blue-600">Employer DEI Dashboard</p>
+                  <h2 className="mt-2 text-2xl font-black text-gray-900">Compliance overview</h2>
+                  <p className="mt-2 max-w-2xl text-sm text-gray-500">
+                    Track PwD hiring percentage against the 3% RPwD mandate, review trends, and keep the current employee
+                    count in sync with your hiring decisions.
+                  </p>
+                  <button 
+                    onClick={seedMockData}
+                    className="mt-4 text-xs font-bold bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition"
+                  >
+                    🧪 Generate Demo Analytics Data
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:min-w-[18rem]">
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                    <p className="text-[0.65rem] font-bold uppercase tracking-widest text-blue-600">Plan</p>
+                    <p className="mt-1 text-base font-black text-gray-900">HR Compliance SaaS</p>
+                    <p className="text-sm text-blue-700">Built for workforce reporting</p>
+                  </div>
+                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-[0.65rem] font-bold uppercase tracking-widest text-gray-500">Live status</p>
+                    <p className="mt-1 text-base font-black text-gray-900">{deiAnalytics?.complianceStatus ?? "Pending"}</p>
+                    <p className="text-sm text-gray-500">{deiAnalytics?.selectedCandidatesThisQuarter ?? 0} decisions</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-6 xl:grid-cols-2 xl:items-stretch">
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm h-full">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-blue-600">Company Information</p>
+                    <h3 className="mt-2 text-xl font-black text-gray-900">Set company size and current PwD employees</h3>
+                    <p className="mt-2 max-w-2xl text-sm text-gray-500">
+                      Keep the stored employee count aligned so the compliance snapshot reflects the latest decisions.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-right min-w-[10rem]">
+                    <p className="text-[0.65rem] font-bold uppercase tracking-widest text-blue-600">Stored count</p>
+                    <p className="text-2xl font-black text-gray-900">{deiAnalytics?.currentPwdEmployees ?? pwdEmployees}</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+                  <div>
+                    <label className="mb-2 block text-sm font-bold text-gray-700">Total Employees in Company</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={totalEmployees || ""}
+                      onChange={(e) => setTotalEmployees(Number(e.target.value))}
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-medium outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white"
+                      placeholder="e.g. 500"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-bold text-gray-700">Current PwD Employees</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={pwdEmployees || ""}
+                      onChange={(e) => setPwdEmployees(Number(e.target.value))}
+                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-medium outline-none transition placeholder:text-gray-400 focus:border-blue-500 focus:bg-white"
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                  <button
+                    onClick={saveCompanyInfo}
+                    disabled={savingCompanyInfo}
+                    className="h-[3.15rem] rounded-xl bg-blue-600 px-5 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {savingCompanyInfo ? "Saving..." : "Save Settings"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm h-full">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-blue-600">Mandate status</p>
+                    <h3 className="mt-2 text-xl font-black text-gray-900">RPwD snapshot</h3>
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest ${deiAnalytics?.complianceStatus === "On Track" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                    {deiAnalytics?.complianceStatus ?? "Pending"}
+                  </span>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-sm font-bold text-gray-900">Mandate target</p>
+                    <p className="mt-1 text-sm text-gray-500">Minimum hiring benchmark</p>
+                    <p className="mt-3 text-2xl font-black text-gray-900">3.0%</p>
+                  </div>
+                  <div className={`rounded-xl border p-4 ${deiAnalytics?.complianceStatus === "On Track" ? "border-green-100 bg-green-50" : "border-amber-100 bg-amber-50"}`}>
+                    <p className={`text-sm font-bold ${deiAnalytics?.complianceStatus === "On Track" ? "text-green-900" : "text-amber-900"}`}>Your compliance</p>
+                    <p className={`mt-1 text-sm ${deiAnalytics?.complianceStatus === "On Track" ? "text-green-700" : "text-amber-700"}`}>
+                      {deiAnalytics?.currentPwdEmployees ?? 0} PwD / {deiAnalytics?.totalEmployees ?? 0} total
+                    </p>
+                    <p className={`mt-3 text-2xl font-black ${deiAnalytics?.complianceStatus === "On Track" ? "text-green-700" : "text-amber-700"}`}>
+                      {deiAnalytics?.pwdCompliancePercentage.toFixed(1) ?? "0.0"}%
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <p className="text-sm font-bold text-gray-900">Latest audit score</p>
+                    <p className="mt-1 text-sm text-gray-500">Most recent inclusion audit record</p>
+                    <p className="mt-3 text-2xl font-black text-gray-900">{deiAnalytics?.latestAuditScore ?? 0}/100</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {deiLoading ? (
+              <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center font-bold text-gray-500 shadow-sm animate-pulse">Loading live DEI analytics…</div>
+            ) : deiError ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center font-bold text-red-700 shadow-sm">{deiError}</div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {deiHighlights.map((item) => (
+                  <div key={item.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm h-full">
+                    <div className="flex h-full flex-col">
+                      <p className="text-[0.7rem] font-bold uppercase tracking-widest text-gray-500">{item.label}</p>
+                      <p className="mt-3 text-3xl font-black text-gray-900">{item.value}</p>
+                      <p className="mt-2 min-h-[3rem] text-sm leading-6 text-gray-500">{item.sub}</p>
+                      <p className="mt-auto pt-3 text-xs font-bold uppercase tracking-widest text-blue-600">{item.trend}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-blue-600">Trends</p>
+                    <h3 className="mt-2 text-xl font-black text-gray-900">Quarterly compliance trend</h3>
+                  </div>
+                </div>
+                {deiQuarterData.length > 0 ? (
+                  <ChartContainer
+                    config={{
+                      compliance: { label: "Compliance Score", color: "#2563eb" },
+                      hiringRate: { label: "PwD Hiring %", color: "#16a34a" },
+                      improvements: { label: "Accessibility Improvements", color: "#0ea5e9" },
+                    }}
+                    className="mt-6 h-[22rem] w-full"
+                  >
+                    <AreaChart data={deiQuarterData} margin={{ left: 6, right: 18, top: 12, bottom: 6 }}>
+                      <defs>
+                        <linearGradient id="deiComplianceArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#2563eb" stopOpacity={0.42} />
+                          <stop offset="100%" stopColor="#2563eb" stopOpacity={0.04} />
+                        </linearGradient>
+                        <linearGradient id="deiHiringArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#16a34a" stopOpacity={0.36} />
+                          <stop offset="100%" stopColor="#16a34a" stopOpacity={0.04} />
+                        </linearGradient>
+                        <linearGradient id="deiImprovementArea" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.42} />
+                          <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0.06} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                      <XAxis dataKey="quarter" tickLine={false} axisLine={false} tick={{ fill: "#6b7280", fontSize: 12, fontWeight: 700 }} dy={10} />
+                      <YAxis tickLine={false} axisLine={false} width={40} tick={{ fill: "#6b7280", fontSize: 12, fontWeight: 700 }} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <ChartLegend content={<ChartLegendContent />} />
+                      <Area type="monotone" dataKey="compliance" stroke="#2563eb" fill="url(#deiComplianceArea)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+                      <Area type="monotone" dataKey="hiringRate" stroke="#16a34a" fill="url(#deiHiringArea)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+                      <Area type="monotone" dataKey="improvements" stroke="#0ea5e9" fill="url(#deiImprovementArea)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+                    </AreaChart>
+                  </ChartContainer>
+                ) : (
+                  <div className="mt-10 py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 text-center text-gray-500 font-bold">
+                    📉 No trend data available yet. Please complete an audit or select candidates.
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <p className="text-xs font-black uppercase tracking-widest text-blue-600">Workforce Composition</p>
+                  <h3 className="mt-2 text-xl font-black text-gray-900">PwD vs Non-PwD</h3>
+                  <div className="mt-6 h-[15rem]">
+                    {workforceDiversity.length > 0 ? (
+                      <ChartContainer config={{ pwd: { label: "PwD", color: "#2563eb" }, nonPwd: { label: "Non-PwD", color: "#94a3b8" } }} className="h-full w-full">
+                        <PieChart>
+                          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                          <Pie data={workforceDiversity} dataKey="value" nameKey="name" innerRadius={42} outerRadius={66} paddingAngle={2} strokeWidth={0}>
+                            {workforceDiversity.map((entry, index) => (
+                              <Cell key={entry.name} fill={index === 0 ? "#2563eb" : "#94a3b8"} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ChartContainer>
+                    ) : <div className="h-full flex items-center justify-center text-gray-400 font-bold">No workforce data</div>}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <p className="text-xs font-black uppercase tracking-widest text-blue-600">Hiring Funnel</p>
+                  <h3 className="mt-2 text-xl font-black text-gray-900">Selection Ratio</h3>
+                  <div className="mt-6 h-[15rem]">
+                    {decisionSplit.length > 0 ? (
+                      <ChartContainer config={{ selected: { label: "Selected", color: "#16a34a" }, other: { label: "Other", color: "#f59e0b" } }} className="h-full w-full">
+                        <PieChart>
+                          <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                          <Pie data={decisionSplit} dataKey="value" nameKey="name" innerRadius={42} outerRadius={66} paddingAngle={2} strokeWidth={0}>
+                            {decisionSplit.map((entry, index) => (
+                              <Cell key={entry.name} fill={index === 0 ? "#16a34a" : "#f59e0b"} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ChartContainer>
+                    ) : <div className="h-full flex items-center justify-center text-gray-400 font-bold">No selection data</div>}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

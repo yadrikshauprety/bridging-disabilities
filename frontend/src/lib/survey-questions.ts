@@ -1,22 +1,29 @@
-export const EMPLOYER_SURVEY_QUESTIONS = [
-  "Does your workplace have step-free access or ramps at all entrances?",
-  "Are the ramps compliant with proper slope and handrails?",
-  "Are there accessible washrooms with grab bars and adequate space?",
-  "Are elevators available with Braille buttons and audio announcements?",
-  "Is there reserved accessible parking near the entrance?",
-  "Is your company website screen-reader compatible?",
-  "Are internal HR tools and software accessible to visually impaired users?",
-  "Do your digital platforms support keyboard-only navigation?",
-  "Are training materials provided with captions or transcripts?",
-  "Do you follow recognized accessibility standards like WCAG?",
-  "Does your organization have a formal disability inclusion policy?",
-  "Have employees undergone disability sensitivity training?",
-  "Do you provide reasonable accommodations such as flexible hours or assistive devices?",
-  "Is there a designated liaison officer for employees with disabilities?",
-  "Do you have an anti-discrimination policy covering disabilities?",
-  "Do you actively encourage persons with disabilities to apply in job postings?",
-  "Is your hiring process accessible (e.g., interpreters, extra time, alternative formats)?",
-  "What percentage of your workforce consists of UDID-certified employees?",
-  "Do you track and report hiring and retention metrics for persons with disabilities?",
-  "Do you partner with organizations supporting disability employment?",
+export const AUDIT_QUESTIONS = [
+  // Physical Accessibility
+  { id: 1, category: "Physical", q: "Does the workplace have ramps at all primary entrances?" },
+  { id: 2, category: "Physical", q: "Are there designated accessible parking spaces near the entrance?" },
+  { id: 3, category: "Physical", q: "Are elevators equipped with Braille buttons and audio announcements?" },
+  { id: 4, category: "Physical", q: "Are all workstations adjustable for different mobility needs?" },
+  { id: 5, category: "Physical", q: "Are there accessible restrooms on every floor?" },
+  
+  // Digital Accessibility
+  { id: 6, category: "Digital", q: "Is the internal company portal screen-reader friendly?" },
+  { id: 7, category: "Digital", q: "Do all training videos include closed captions?" },
+  { id: 8, category: "Digital", q: "Can all internal software be navigated using only a keyboard?" },
+  { id: 9, category: "Digital", q: "Does the company provide assistive software (e.g., JAWS, NVDA) to employees?" },
+  { id: 10, category: "Digital", q: "Are all company documents provided in accessible formats (e.g., tagged PDFs)?" },
+  
+  // Workplace Policies
+  { id: 11, category: "Policy", q: "Does the company have a written Equal Opportunity Policy for PwD?" },
+  { id: 12, category: "Policy", q: "Is there a designated Disability Liaison Officer in the HR team?" },
+  { id: 13, category: "Policy", q: "Does the company provide sensitivity training to all employees?" },
+  { id: 14, category: "Policy", q: "Is there a formal process for requesting workplace accommodations?" },
+  { id: 15, category: "Policy", q: "Are evacuation plans specifically designed for PwD?" },
+  
+  // Hiring & Metrics
+  { id: 16, category: "Hiring", q: "Do job postings explicitly encourage applications from PwD?" },
+  { id: 17, category: "Hiring", q: "Is the hiring process (interviews/testing) fully accessible?" },
+  { id: 18, category: "Metrics", q: "Does the company track the percentage of PwD in its workforce?" },
+  { id: 19, category: "Metrics", q: "Are there partnerships with NGOs for disability hiring?" },
+  { id: 20, category: "Metrics", q: "Is the PwD employee retention rate tracked annually?" }
 ];

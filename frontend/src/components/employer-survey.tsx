@@ -1,71 +1,79 @@
 import { useState } from "react";
-import { EMPLOYER_SURVEY_QUESTIONS } from "@/lib/survey-questions";
+import { AUDIT_QUESTIONS } from "@/lib/survey-questions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 interface SurveyModalProps {
-  onComplete: (hasBadge: boolean, answers: Record<number, boolean>) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onComplete: (score: number, answers: Record<number, boolean>) => void;
 }
 
-export function SurveyModal({ onComplete }: SurveyModalProps) {
+export function SurveyModal({ open, onOpenChange, onComplete }: SurveyModalProps) {
+  const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, boolean>>({});
-  const [step, setStep] = useState(0);
 
-  const handleAnswer = (val: boolean) => {
-    const nextAnswers = { ...answers, [step]: val };
-    setAnswers(nextAnswers);
-    if (step < EMPLOYER_SURVEY_QUESTIONS.length - 1) {
-      setStep(step + 1);
+  const handleAnswer = (answer: boolean) => {
+    const questionId = AUDIT_QUESTIONS[currentStep].id;
+    const newAnswers = { ...answers, [questionId]: answer };
+    setAnswers(newAnswers);
+
+    if (currentStep < AUDIT_QUESTIONS.length - 1) {
+      setCurrentStep(currentStep + 1);
     } else {
-      const yesCount = Object.values(nextAnswers).filter(Boolean).length;
-      const hasBadge = yesCount >= 15; // 75% of 20
-      onComplete(hasBadge, nextAnswers);
+      // Calculate score
+      const yesCount = Object.values(newAnswers).filter(Boolean).length;
+      const score = Math.round((yesCount / AUDIT_QUESTIONS.length) * 100);
+      onComplete(score, newAnswers);
+      onOpenChange(false);
     }
   };
 
-  const progress = Math.round(((step + 1) / EMPLOYER_SURVEY_QUESTIONS.length) * 100);
+  const currentQuestion = AUDIT_QUESTIONS[currentStep];
+  const progress = ((currentStep + 1) / AUDIT_QUESTIONS.length) * 100;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-card w-full max-w-lg rounded-3xl shadow-2xl border-2 border-primary/20 overflow-hidden">
-        <div className="bg-primary p-6 text-primary-foreground">
-          <h2 className="text-2xl font-black">Workplace Inclusion Audit</h2>
-          <p className="opacity-90 text-sm">Help us verify your workplace accessibility.</p>
-        </div>
-        
-        <div className="p-8">
-          <div className="mb-6">
-            <div className="flex justify-between text-xs font-bold uppercase text-muted-foreground mb-2">
-              <span>Question {step + 1} of 20</span>
-              <span>{progress}%</span>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl">
+        <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] p-8 text-white">
+          <DialogHeader className="mb-8">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Inclusion Audit</span>
+              <span className="text-[10px] font-black text-white/50">{currentStep + 1} / {AUDIT_QUESTIONS.length}</span>
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
-            </div>
+            <DialogTitle className="text-2xl font-black tracking-tight leading-tight">
+              {currentQuestion.category} Accessibility
+            </DialogTitle>
+            <Progress value={progress} className="h-1.5 bg-white/10 mt-4" />
+          </DialogHeader>
+
+          <div className="min-h-[120px] flex items-center">
+            <p className="text-xl font-bold leading-relaxed text-slate-200 italic">
+              "{currentQuestion.q}"
+            </p>
           </div>
 
-          <h3 className="text-xl font-bold leading-tight min-h-[5rem]">
-            {EMPLOYER_SURVEY_QUESTIONS[step]}
-          </h3>
-
-          <div className="grid grid-cols-2 gap-4 mt-8">
-            <button
+          <div className="grid grid-cols-2 gap-4 mt-12">
+            <Button 
               onClick={() => handleAnswer(true)}
-              className="rounded-2xl border-2 border-primary bg-primary/5 py-4 font-black text-primary hover:bg-primary hover:text-primary-foreground transition"
+              className="py-8 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-black text-lg shadow-lg hover:scale-[1.02] transition-transform"
             >
               YES
-            </button>
-            <button
+            </Button>
+            <Button 
               onClick={() => handleAnswer(false)}
-              className="rounded-2xl border-2 border-border py-4 font-bold text-muted-foreground hover:border-primary transition"
+              className="py-8 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-black text-lg shadow-lg hover:scale-[1.02] transition-transform"
             >
-              NO / NOT YET
-            </button>
+              NO
+            </Button>
           </div>
+          
+          <p className="text-center text-[10px] font-bold text-white/30 uppercase tracking-widest mt-8">
+            Please answer truthfully for compliance tracking
+          </p>
         </div>
-
-        <div className="px-8 pb-6 text-[10px] text-center text-muted-foreground uppercase tracking-widest font-bold">
-          DisabilityBridge Inclusion Standards
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

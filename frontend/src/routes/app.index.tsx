@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useA11y } from "@/lib/accessibility-context";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { matchVoiceCommand, VOICE_EXAMPLES } from "@/lib/voice-router";
+import { supabase } from "@/features/interview-bridge/lib/supabase";
 
 export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [{ title: "Home — DisabilityBridge" }] }),
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/app/")({
 });
 
 interface Turn { id: string; user: string; reply: string; ts: number }
+interface Session { id: string; employer_id: string; job_title: string; status: string; created_at: string }
 
 function Home() {
   const a11y = useA11y();
@@ -18,6 +20,40 @@ function Home() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [lastReply, setLastReply] = useState<string>("");
   const [showHistory, setShowHistory] = useState(false);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+
+  useEffect(() => {
+    async function fetchSessions() {
+      try {
+        const { data, error } = await supabase
+          .from("interview_sessions")
+          .select("*")
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
+        
+        if (error) throw error;
+        setSessions(data || []);
+      } catch (err) {
+        console.error("Failed to fetch interview sessions:", err);
+      } finally {
+        setLoadingSessions(false);
+      }
+    }
+
+    fetchSessions();
+    
+    // Subscribe to new invites
+    const channel = supabase
+      .channel("interview_invites")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "interview_sessions" }, (payload) => {
+        setSessions(prev => [payload.new as Session, ...prev]);
+        a11y.speak("You have a new Round 2 interview invitation!", "assistant");
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   function runCommand(cmd: string) {
     const intent = matchVoiceCommand(cmd);
@@ -36,6 +72,38 @@ function Home() {
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
+      {/* Interview Invites Notification */}
+      {sessions.length > 0 && (
+        <section className="animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="rounded-3xl border-4 border-blue-600 bg-blue-50 p-6 shadow-lg">
+            <div className="flex items-center gap-4 mb-4">
+              <span className="text-4xl animate-bounce">🚀</span>
+              <div>
+                <h2 className="text-xl font-black text-blue-900 uppercase tracking-tight">Round 2 Invitations!</h2>
+                <p className="text-blue-700 font-bold">Employers want to meet you in the live interview bridge.</p>
+              </div>
+            </div>
+            <div className="grid gap-3">
+              {sessions.map(s => (
+                <div key={s.id} className="bg-white rounded-2xl p-4 border-2 border-blue-200 flex items-center justify-between gap-4 shadow-sm">
+                  <div>
+                    <p className="text-xs font-black text-blue-600 uppercase">Invitation Received</p>
+                    <p className="font-black text-lg">{s.job_title}</p>
+                    <p className="text-sm text-muted-foreground">{new Date(s.created_at).toLocaleString()}</p>
+                  </div>
+                  <button
+                    onClick={() => navigate({ to: `/session/${s.id}/candidate` as any })}
+                    className="bg-blue-600 text-white font-black px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-md whitespace-nowrap"
+                  >
+                    Join Live Bridge →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section
         aria-label="Live voice command demo"
         className="rounded-3xl bg-gradient-to-br from-primary via-primary-glow to-accent p-6 md:p-8 text-primary-foreground shadow-warm"

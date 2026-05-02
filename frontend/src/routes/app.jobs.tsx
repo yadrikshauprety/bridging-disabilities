@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useA11y } from "@/lib/accessibility-context";
-import { EMPLOYER_SURVEY_QUESTIONS } from "@/lib/survey-questions";
+import { AUDIT_QUESTIONS } from "@/lib/survey-questions";
 
 export const Route = createFileRoute("/app/jobs")({
   head: () => ({ meta: [{ title: "Jobs — DisabilityBridge" }] }),
@@ -18,7 +18,8 @@ function JobsPage() {
   useEffect(() => {
     async function fetchJobs() {
       try {
-        const res = await fetch("http://localhost:5000/api/jobs");
+        const res = await fetch("/api/jobs");
+        if (!res.ok) throw new Error("Failed to fetch jobs");
         const data = await res.json();
         setJobs(data);
       } catch (err) {
@@ -72,13 +73,13 @@ function JobsPage() {
                       <div className="mt-6 border-t pt-4">
                         <h3 className="text-xs font-black uppercase text-muted-foreground mb-3">Workplace Accessibility</h3>
                         <ul className="grid sm:grid-cols-2 gap-2 text-xs">
-                          {EMPLOYER_SURVEY_QUESTIONS.map((q, i) => {
+                          {AUDIT_QUESTIONS.map((q) => {
                             const flags = j.inclusionFlags || {};
-                            const hasFeature = flags[i] === true;
+                            const hasFeature = flags[q.id] === true;
                             return (
-                              <li key={i} className={`flex items-start gap-2 ${!hasFeature ? "line-through text-muted-foreground opacity-50" : "font-bold text-primary"}`}>
+                              <li key={q.id} className={`flex items-start gap-2 ${!hasFeature ? "line-through text-muted-foreground opacity-50" : "font-bold text-primary"}`}>
                                 <span>{hasFeature ? "✓" : "✕"}</span>
-                                <span>{q}</span>
+                                <span>{q.q}</span>
                               </li>
                             );
                           })}

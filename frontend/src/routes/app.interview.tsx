@@ -286,7 +286,7 @@ function InterviewPage() {
     setAnalyzing(true);
     a11y.speak("Analyzing your sign sequence with AI...", "system");
     try {
-      const res = await fetch("http://localhost:5000/api/ml/recognize-sign", {
+      const res = await fetch("/api/ml/recognize-sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ landmarks: framesRef.current }),
@@ -309,7 +309,7 @@ function InterviewPage() {
     const params=new URLSearchParams(window.location.search);
     const jobId=params.get("jobId");
     if(!jobId) return;
-    fetch(`http://localhost:5000/api/jobs/${jobId}`)
+    fetch(`/api/jobs/${jobId}`)
       .then(r=>r.ok?r.json():null)
       .then(job=>{
         if(!job) return;
@@ -458,7 +458,7 @@ function InterviewPage() {
 
   async function submitInterview() {
     try {
-      await fetch("http://localhost:5000/api/interviews",{
+      await fetch("/api/interviews",{
         method:"POST", headers:{"Content-Type":"application/json"},
         body:JSON.stringify({jobId:jobContext?.id??"unknown",candidateId:"pwd_candidate_1",employerId:jobContext?.employerId??"emp_1",transcript}),
       });

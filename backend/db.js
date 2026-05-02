@@ -91,18 +91,40 @@ export async function getDb() {
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (placeId) REFERENCES places (id)
     );
+
+    CREATE TABLE IF NOT EXISTS employer_audits (
+      id TEXT PRIMARY KEY,
+      employerId TEXT NOT NULL,
+      answers TEXT NOT NULL, -- JSON string
+      yesCount INTEGER NOT NULL,
+      totalQuestions INTEGER NOT NULL DEFAULT 20,
+      score INTEGER NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS employer_info (
+      employerId TEXT PRIMARY KEY,
+      totalEmployees INTEGER DEFAULT 0,
+      pwdEmployees INTEGER DEFAULT 0,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS candidate_reviews (
+      interviewId TEXT PRIMARY KEY,
+      employerId TEXT NOT NULL,
+      status TEXT DEFAULT 'applied',
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (interviewId) REFERENCES interviews (id)
+    );
   `);
 
-  // Ensure udid_applications has aadhar column (for existing databases)
-  try {
-    await db.run("ALTER TABLE udid_applications ADD COLUMN aadhar TEXT");
-  } catch (e) {
-    if (e.message.includes("duplicate column name")) {
-      // Column already exists
-    } else {
-      console.warn("Migration error:", e.message);
-    }
-  }
+  // Migrations for existing columns
+  try { await db.run("ALTER TABLE udid_applications ADD COLUMN aadhar TEXT"); } catch (e) {}
+  try { await db.run("ALTER TABLE employer_info ADD COLUMN totalEmployees INTEGER DEFAULT 0"); } catch (e) {}
+  try { await db.run("ALTER TABLE employer_info ADD COLUMN pwdEmployees INTEGER DEFAULT 0"); } catch (e) {}
+  try { await db.run("ALTER TABLE employer_info ADD COLUMN updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP"); } catch (e) {}
+  try { await db.run("ALTER TABLE employer_audits ADD COLUMN totalQuestions INTEGER DEFAULT 20"); } catch (e) {}
+  try { await db.run("ALTER TABLE employer_audits ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP"); } catch (e) {}
 
   return db;
 }
