@@ -2,39 +2,13 @@ import express from "express";
 import { getDb } from "../db.js";
 import twilio from "twilio";
 import dotenv from "dotenv";
+import { sendWhatsApp } from "../utils/whatsapp.js";
 
 dotenv.config();
 
 const router = express.Router();
 
-const sendWhatsApp = async (to, body) => {
-  try {
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
-      console.log(`[MOCK SOS]: ${body}`);
-      return { success: true, mock: true };
-    }
-    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    const from = process.env.TWILIO_WHATSAPP_NUMBER || "whatsapp:+14155238886";
-    
-    // Ensure 'to' has + prefix and country code
-    let formattedTo = to.trim();
-    if (!formattedTo.startsWith("+")) {
-      // Default to +91 if missing and length looks like Indian number
-      if (formattedTo.length === 10) formattedTo = `+91${formattedTo}`;
-      else if (!formattedTo.startsWith("+")) formattedTo = `+${formattedTo}`;
-    }
-    
-    const toFormatted = `whatsapp:${formattedTo}`;
-    console.log(`[SOS] Sending WhatsApp from ${from} to ${toFormatted}...`);
-    
-    const message = await client.messages.create({ from, to: toFormatted, body });
-    console.log(`[SOS] WhatsApp sent! SID: ${message.sid}`);
-    return { success: true, sid: message.sid, recipient: toFormatted };
-  } catch (e) {
-    console.error("[SOS] WhatsApp Error:", e.message);
-    return { success: false, error: e.message };
-  }
-};
+
 
 router.post("/sos/:email", async (req, res) => {
   const { email } = req.params;

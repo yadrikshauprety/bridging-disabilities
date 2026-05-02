@@ -61,9 +61,17 @@ Create `.env` files in both `frontend` and `backend` directories.
 #### **Backend (`backend/.env`)**
 ```env
 GROQ_API_KEY=your_groq_key_here
-TWILIO_ACCOUNT_SID=your_sid_here
+TWILIO_ACCOUNT_SID=AC...
 TWILIO_AUTH_TOKEN=your_token_here
 TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+```
+
+> [!IMPORTANT]
+> **Twilio Sandbox**: To receive messages, you MUST send `join <your-sandbox-code>` to the Twilio WhatsApp number from your phone.
+
+#### **Frontend (`frontend/.env`)**
+```env
+VITE_GROQ_API_KEY=your_groq_key_here
 ```
 
 ### 4. Run the Platform
@@ -92,6 +100,7 @@ DisabilityBridge ensures immutable verification of disability certificates.
 - **Sign Language interviews**: MediaPipe-powered gesture recognition.
 - **AI Scheme Search**: Intelligent government scheme discovery.
 - **Blockchain Ledger**: Anti-fraud UDID certificate verification.
+- **Unified Notifications**: Robust WhatsApp engine for SOS alerts and UDID status updates (powered by Twilio).
 
 ---
 

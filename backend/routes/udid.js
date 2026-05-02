@@ -3,6 +3,7 @@ import multer from "multer";
 import { getDb } from "../db.js";
 import twilio from "twilio";
 import dotenv from "dotenv";
+import { sendWhatsApp } from "../utils/whatsapp.js";
 
 dotenv.config();
 
@@ -149,33 +150,6 @@ router.post("/medical-authority", async (req, res) => {
     });
   }
 });
-
-// Helper for Twilio
-const sendWhatsApp = async (to, body) => {
-  try {
-    const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER } = process.env;
-
-    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) {
-      console.log(`[MOCK WHATSAPP]: ${body}`);
-      return;
-    }
-    const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-    const from = TWILIO_WHATSAPP_NUMBER || "whatsapp:+14155238886";
-    
-    // Use the passed 'to' number, or fallback to the demo number if 'to' is invalid/missing
-    let target = to;
-    if (!target || !target.startsWith("+")) {
-      target = "+919019320048"; // Fallback demo number
-    }
-    
-    const toFormatted = target.startsWith("whatsapp:") ? target : `whatsapp:${target}`;
-    
-    const message = await client.messages.create({ from, to: toFormatted, body });
-    console.log(`WhatsApp sent to ${toFormatted}. SID: ${message.sid}`);
-  } catch (e) {
-    console.error("Twilio Error sending to WhatsApp:", e.message);
-  }
-};
 
 // 4. Submit Application
 router.post("/submit", async (req, res) => {
