@@ -55,7 +55,7 @@ router.post("/extract-aadhaar", upload.single("image"), async (req, res) => {
             type: "text",
             text: `Extract the following details from this Aadhaar card image. If the image is not an Aadhaar card or unreadable, return reasonable mock data.
             Return ONLY a valid JSON object with no markdown formatting or extra text:
-            { "name": "", "dob": "", "gender": "", "address": "" }`
+            { "name": "", "dob": "", "gender": "", "address": "", "aadhar_number": "" }`
           },
           {
             type: "image_url",
@@ -80,7 +80,8 @@ router.post("/extract-aadhaar", upload.single("image"), async (req, res) => {
         name: "Mock User",
         dob: "01/01/1990",
         gender: "Male",
-        address: "123 Mock Street, Bangalore, Karnataka"
+        address: "123 Mock Street, Bangalore, Karnataka",
+        aadhar_number: "1234-5678-9012"
       });
     }
   } catch (error) {
@@ -178,14 +179,14 @@ const sendWhatsApp = async (to, body) => {
 
 // 4. Submit Application
 router.post("/submit", async (req, res) => {
-  const { userId, name, phone, disabilityType } = req.body;
+  const { userId, name, phone, disabilityType, aadhar } = req.body;
   const appId = `UD${Math.floor(Math.random() * 100000)}`;
   
   try {
     const db = await getDb();
     await db.run(
-      "INSERT INTO udid_applications (id, userId, name, phone, disabilityType, status) VALUES (?, ?, ?, ?, ?, ?)",
-      [appId, userId || "user_1", name, phone || "+919999999999", disabilityType, "Submitted"]
+      "INSERT INTO udid_applications (id, userId, name, phone, disabilityType, aadhar, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [appId, userId || "user_1", name, phone || "+919019320048", disabilityType, aadhar, "Submitted"]
     );
 
     // Send confirmation WhatsApp
@@ -233,8 +234,20 @@ router.get("/status/:id", async (req, res) => {
 router.get("/applications", async (req, res) => {
   try {
     const db = await getDb();
-    const apps = await db.all("SELECT * FROM udid_applications ORDER BY timestamp DESC");
-    res.json(apps);
+    const apps = await db.all(`
+      SELECT a.*, u.aadhar as userAadhar 
+      FROM udid_applications a 
+      LEFT JOIN users u ON a.userId = u.email 
+      ORDER BY a.timestamp DESC
+    `);
+    
+    // Manually merge aadhar if the column exists in a.*, otherwise use userAadhar
+    const sanitizedApps = apps.map(app => ({
+      ...app,
+      aadhar: app.aadhar || app.userAadhar || "N/A"
+    }));
+
+    res.json(sanitizedApps);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch applications" });
@@ -272,6 +285,33 @@ router.post("/simulate-status/:id", async (req, res) => {
   } catch (error) {
     console.error("Simulation error:", error);
     res.status(500).json({ error: "Simulation failed" });
+  }
+});
+
+// 7. Verify NFC Tap (For Digital Wallet)
+router.post("/verify-tap/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = await getDb();
+    const app = await db.get("SELECT * FROM udid_applications WHERE id = ?", [id]);
+    
+    if (!app) return res.status(404).json({ success: false, error: "Invalid UDID" });
+    if (app.status !== "Card Generated" && app.status !== "Approved") {
+      return res.status(400).json({ success: false, error: "Card not yet generated or invalid" });
+    }
+
+    const verificationReceipt = `VERIFIED-${Math.floor(Date.now() / 1000)}-${id}`;
+    await sendWhatsApp(app.phone, `🔔 Your UDID Digital Card was just used and verified successfully. Receipt: ${verificationReceipt}`);
+
+    res.json({
+      success: true,
+      message: "Card verified successfully via NFC tap.",
+      receipt: verificationReceipt,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("NFC Verification error:", error);
+    res.status(500).json({ success: false, error: "Verification failed" });
   }
 });
 

@@ -15,6 +15,7 @@ const NAV = [
   { to: "/app/jobs", label: "Jobs", icon: "💼" },
   { to: "/app/schemes", label: "Schemes", icon: "🏛️" },
   { to: "/app/udid", label: "UDID Navigator", icon: "🆔" },
+  { to: "/app/wallet", label: "Digital Wallet", icon: "🪪" },
   { to: "/app/communication", label: "Communication", icon: "💬" },
   { to: "/app/scripts", label: "Sign & Braille", icon: "🤟" },
   { to: "/app/interview", label: "Sign Interview", icon: "🎥" },

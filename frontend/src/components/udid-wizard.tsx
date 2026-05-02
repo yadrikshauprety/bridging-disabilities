@@ -22,6 +22,7 @@ export function UDIDWizard() {
     gender: "",
     address: "",
     phone: "",
+    aadhar: "",
     disabilityType: "Locomotor Disability",
     state: "Karnataka",
     district: "Bangalore Urban",
@@ -97,7 +98,8 @@ export function UDIDWizard() {
         name: data.name || "",
         dob: data.dob || "",
         gender: data.gender || "",
-        address: data.address || ""
+        address: data.address || "",
+        aadhar: data.aadhar_number || ""
       }));
       a11y.speak(`Aadhaar verified successfully. Name detected as ${data.name}.`, "assistant");
       setTimeout(() => setStep(1), 1500);
@@ -160,7 +162,8 @@ export function UDIDWizard() {
           userId: userId,
           name: formData.name,
           phone: formData.phone,
-          disabilityType: formData.disabilityType
+          disabilityType: formData.disabilityType,
+          aadhar: formData.aadhar
         })
       });
       const data = await res.json();
@@ -241,6 +244,16 @@ export function UDIDWizard() {
                 type="text" 
                 value={formData.name} 
                 onChange={e => setFormData({...formData, name: e.target.value})}
+                className="w-full p-4 rounded-xl border-2 border-border bg-background font-bold outline-none focus:border-primary" 
+              />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-muted-foreground">Aadhaar Number</label>
+              <input 
+                type="text" 
+                value={formData.aadhar} 
+                placeholder="1234-5678-9012"
+                onChange={e => setFormData({...formData, aadhar: e.target.value})}
                 className="w-full p-4 rounded-xl border-2 border-border bg-background font-bold outline-none focus:border-primary" 
               />
             </div>
@@ -387,6 +400,7 @@ export function UDIDWizard() {
                <h4 className="font-black text-xl mb-4 border-b-2 border-border pb-2">Application Summary</h4>
                <div className="grid grid-cols-2 gap-4 text-sm">
                  <div><strong className="text-muted-foreground block">Name</strong> <span className="font-bold text-lg">{formData.name || "N/A"}</span></div>
+                 <div><strong className="text-muted-foreground block">Aadhaar</strong> <span className="font-bold text-lg">{formData.aadhar || "N/A"}</span></div>
                  <div><strong className="text-muted-foreground block">Disability</strong> <span className="font-bold text-lg">{formData.disabilityType}</span></div>
                  <div><strong className="text-muted-foreground block">Hospital</strong> <span className="font-bold text-lg">{authority?.authority || "N/A"}</span></div>
                  <div><strong className="text-muted-foreground block">WhatsApp</strong> <span className="font-bold text-lg">{formData.phone || "Not provided"}</span></div>

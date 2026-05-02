@@ -53,6 +53,7 @@ export async function getDb() {
       name TEXT NOT NULL,
       phone TEXT NOT NULL,
       disabilityType TEXT NOT NULL,
+      aadhar TEXT,
       status TEXT DEFAULT 'Submitted',
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -91,6 +92,17 @@ export async function getDb() {
       FOREIGN KEY (placeId) REFERENCES places (id)
     );
   `);
+
+  // Ensure udid_applications has aadhar column (for existing databases)
+  try {
+    await db.run("ALTER TABLE udid_applications ADD COLUMN aadhar TEXT");
+  } catch (e) {
+    if (e.message.includes("duplicate column name")) {
+      // Column already exists
+    } else {
+      console.warn("Migration error:", e.message);
+    }
+  }
 
   return db;
 }

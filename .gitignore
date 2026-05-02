@@ -6,21 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# Diagnostic reports
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
 # Dependency directories
 node_modules/
 jspm_packages/
-
-# TypeScript
-*.tsbuildinfo
 
 # Build output
 dist/
@@ -28,12 +16,26 @@ dist-ssr/
 .next/
 .nuxt/
 build/
+frontend/dist/
 
 # Environment variables
 .env
 .env.test
 .env.local
 .env.*.local
+backend/.env
+frontend/.env
+
+# Blockchain
+blockchain/artifacts/
+blockchain/cache/
+blockchain/typechain/
+blockchain/typechain-types/
+
+# Database
+*.sqlite
+*.sqlite3
+backend/database.sqlite
 
 # OS files
 .DS_Store
@@ -42,11 +44,3 @@ Thumbs.db
 # IDEs
 .vscode/
 .idea/
-
-# Database
-database.sqlite
-*.sqlite3
-
-# Specific to this project
-backend/.env
-frontend/.env

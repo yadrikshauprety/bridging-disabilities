@@ -77,8 +77,13 @@ function Landing() {
         </div>
         <div className="flex items-center gap-2">
           <Link
+            to="/verify"
+            className="hidden sm:inline-flex rounded-full border-2 border-accent px-4 py-2 font-bold hover:bg-accent hover:text-accent-foreground transition"
+          >
+            Verify UDID
+          </Link>
+          <Link
             to="/auth/sign-in"
-            aria-label="Sign in"
             className="hidden sm:inline-flex rounded-full border-2 border-primary px-4 py-2 font-bold hover:bg-primary hover:text-primary-foreground transition"
           >
             Sign in
