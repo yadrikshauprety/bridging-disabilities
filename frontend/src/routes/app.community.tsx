@@ -68,7 +68,7 @@ function CommunityPage() {
   
   const a11y = useA11y();
   const t = useT();
-  const { role } = useAuth();
+  const { role, userId: authUserId, userName: authUserName } = useAuth();
   const isModerator = role === "moderator";
 
   const loadPosts = async () => {
@@ -119,13 +119,19 @@ function CommunityPage() {
     e.preventDefault();
     if (!composeText.trim() || !composeTag) return;
     
-    // Get real user name from localStorage if available
-    const storedName = localStorage.getItem("db_user_name") || "Anonymous";
+    // Get real user identity from context or fallback to localStorage
+    const finalName = authUserName && authUserName !== "Anonymous User" 
+      ? authUserName 
+      : (localStorage.getItem("db_user_name") || "Anonymous");
+      
+    const finalId = authUserId && authUserId !== "pwd_candidate_1"
+      ? authUserId
+      : (localStorage.getItem("db_user_id") || "guest");
     
     const newPost = {
       id: "p" + Date.now().toString() + Math.random().toString(36).substring(2, 7),
-      userName: storedName,
-      userId: localStorage.getItem("db_user_id") || "anonymous",
+      userName: finalName,
+      userId: finalId,
       text: composeText.trim(),
       tag: composeTag as Category,
       isMod: role === "moderator" ? 1 : 0,

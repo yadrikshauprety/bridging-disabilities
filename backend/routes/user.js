@@ -28,9 +28,7 @@ router.post("/sos/:email", async (req, res) => {
   const result = await sendWhatsApp(contact, `🚨 EMERGENCY SOS: ${name} is in need of immediate assistance. Please check on them!`);
   
   // Also always alert the evaluator for demo visibility
-  if (contact !== "+919019320048") {
-    await sendWhatsApp("+919019320048", `[SOS ALERT] User ${name} (${email}) triggered SOS!`);
-  }
+  await sendWhatsApp("+919019320048", `[SOS ALERT] User ${name} (${email}) triggered SOS! Please check on them.`);
 
   if (result.success) {
     res.json({ success: true, message: "SOS alert sent to your contacts.", recipient: result.recipient });

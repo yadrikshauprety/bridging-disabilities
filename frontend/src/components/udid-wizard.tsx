@@ -46,7 +46,7 @@ export function UDIDWizard() {
 
   useEffect(() => {
     const userId = localStorage.getItem("db_user_id") || "guest";
-    fetch(`http://localhost:5000/api/udid/user/${userId}`)
+    fetch(`/api/udid/user/${userId}`)
       .then(res => {
         if (res.ok) return res.json();
         throw new Error("No app");
@@ -87,7 +87,7 @@ export function UDIDWizard() {
     fd.append("image", file);
 
     try {
-      const res = await fetch("http://localhost:5000/api/udid/extract-aadhaar", {
+      const res = await fetch("/api/udid/extract-aadhaar", {
         method: "POST",
         body: fd
       });
@@ -113,7 +113,7 @@ export function UDIDWizard() {
   const generateChecklist = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/udid/generate-checklist", {
+      const res = await fetch("/api/udid/generate-checklist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -133,7 +133,7 @@ export function UDIDWizard() {
   const findAuthority = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/udid/medical-authority", {
+      const res = await fetch("/api/udid/medical-authority", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -155,7 +155,7 @@ export function UDIDWizard() {
     a11y.speak("Submitting your application.", "assistant");
     const userId = localStorage.getItem("db_user_id") || "guest";
     try {
-      const res = await fetch("http://localhost:5000/api/udid/submit", {
+      const res = await fetch("/api/udid/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

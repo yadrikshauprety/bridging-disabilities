@@ -48,7 +48,7 @@ function AgencyPortal() {
 
   const fetchApplications = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/udid/applications");
+      const res = await fetch("/api/udid/applications");
       const data = await res.json();
       if (Array.isArray(data)) {
         setApplications(data);
@@ -185,7 +185,7 @@ function AgencyPortal() {
         }
       }
 
-      const res = await fetch(`http://localhost:5000/api/udid/simulate-status/${id}`, {
+      const res = await fetch(`/api/udid/simulate-status/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nextStatus, blockchainTx: txHash })

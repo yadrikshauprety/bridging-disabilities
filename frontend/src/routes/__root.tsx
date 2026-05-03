@@ -72,13 +72,17 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { AuthProvider } from "@/lib/auth-context";
+
 function RootComponent() {
   return (
     <AccessibilityProvider>
-      <HoverSpeakRoot>
-        <Outlet />
-        <Toaster />
-      </HoverSpeakRoot>
+      <AuthProvider>
+        <HoverSpeakRoot>
+          <Outlet />
+          <Toaster />
+        </HoverSpeakRoot>
+      </AuthProvider>
     </AccessibilityProvider>
   );
 }

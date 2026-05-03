@@ -17,7 +17,7 @@ function ProfilePage() {
 
   React.useEffect(() => {
     if (email) {
-      fetch(`http://localhost:5000/api/user/profile/${email}`)
+      fetch(`/api/user/profile/${email}`)
         .then(res => res.json())
         .then(data => {
           setProfile(data);
@@ -40,7 +40,7 @@ function ProfilePage() {
     };
 
     try {
-      await fetch(`http://localhost:5000/api/user/profile/${email}`, {
+      await fetch(`/api/user/profile/${email}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -56,7 +56,7 @@ function ProfilePage() {
   async function triggerSOS() {
     if (!email) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/user/sos/${encodeURIComponent(email)}`, { method: "POST" });
+      const res = await fetch(`/api/user/sos/${encodeURIComponent(email)}`, { method: "POST" });
       const data = await res.json();
       if (res.ok) {
         a11y.speak("SOS WhatsApp alert sent to your trusted contact.", "system");

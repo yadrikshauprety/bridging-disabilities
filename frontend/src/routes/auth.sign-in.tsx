@@ -8,9 +8,12 @@ export const Route = createFileRoute("/auth/sign-in")({
   component: SignIn,
 });
 
+import { useAuth } from "@/lib/auth-context";
+
 function SignIn() {
   const a11y = useA11y();
   const navigate = useNavigate();
+  const { refreshAuth } = useAuth();
   const [role, setRole] = useState<"user" | "employer">("user");
 
   function fieldHover(text: string) {
@@ -32,7 +35,11 @@ function SignIn() {
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem("db_user_id", email);
+        localStorage.setItem("db_user_name", data.user.name || "User");
         localStorage.setItem("db_session", role);
+        
+        // Sync context immediately
+        refreshAuth();
         
         if (data.user.disability) a11y.setDisability(data.user.disability as any);
         if (data.user.location) a11y.setLocation(data.user.location);

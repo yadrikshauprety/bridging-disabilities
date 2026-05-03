@@ -96,7 +96,7 @@ function EmployerPage() {
   async function loadInterviews() {
     setLoadingInt(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/interviews/employer/${employerId}`);
+      const res = await fetch(`/api/interviews/employer/${employerId}`);
       if (res.ok) setInterviews(await res.json());
     } catch {}
     setLoadingInt(false);
@@ -116,7 +116,7 @@ function EmployerPage() {
     e.preventDefault();
     setPosting(true);
     try {
-      const res = await fetch("http://localhost:5000/api/jobs", {
+      const res = await fetch("/api/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 

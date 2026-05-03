@@ -11,7 +11,7 @@ export function SOSButton() {
     const userId = localStorage.getItem("db_user_id");
     if (userId) {
       try {
-        const res = await fetch(`http://localhost:5000/api/user/sos/${encodeURIComponent(userId)}`, { method: "POST" });
+        const res = await fetch(`/api/user/sos/${encodeURIComponent(userId)}`, { method: "POST" });
         const data = await res.json();
         if (res.ok) {
           speak("S O S triggered. Your location has been broadcast to your emergency contacts.", "system");
