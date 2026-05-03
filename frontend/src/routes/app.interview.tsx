@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useA11y } from "@/lib/accessibility-context";
 
 export const Route = createFileRoute("/app/interview")({
-  head: () => ({ meta: [{ title: "Sign Language Interview — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Sign Language Interview — Udaan" }] }),
   component: InterviewPage,
 });
 
@@ -460,7 +460,12 @@ function InterviewPage() {
     try {
       await fetch("/api/interviews",{
         method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({jobId:jobContext?.id??"unknown",candidateId:"pwd_candidate_1",employerId:jobContext?.employerId??"emp_1",transcript}),
+        body:JSON.stringify({
+          jobId:jobContext?.id??"unknown",
+          candidateId:localStorage.getItem("db_user_id") || "pwd_candidate_1",
+          employerId:jobContext?.employerId??"emp_1",
+          transcript
+        }),
       });
       setSubmitted(true);
       a11y.speak("Interview submitted.","system");

@@ -8,6 +8,7 @@ import { ISLPanel } from "@/components/isl-panel";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { matchVoiceCommand } from "@/lib/voice-router";
 import { NotificationBell } from "@/features/interview-bridge/components/NotificationBell";
+import { useT } from "@/lib/i18n";
 
 const NAV = [
   { to: "/app", label: "Home", icon: "🏠", exact: true },
@@ -25,6 +26,7 @@ const NAV = [
 
 export function PortalLayout() {
   const a11y = useA11y();
+  const t = useT();
   const location = useLocation();
   const navigate = useNavigate();
   const sr = useSpeechRecognition({ 
@@ -81,11 +83,11 @@ export function PortalLayout() {
     return (
       <div className="min-h-screen flex flex-col bg-background text-foreground">
         <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b-2 border-border px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 font-black" aria-label="DisabilityBridge home">
-            <span className="text-2xl" aria-hidden>🌉</span> DisabilityBridge
+          <Link to="/" className="flex items-center gap-2 font-black" aria-label="Udaan home">
+            <span className="text-2xl" aria-hidden>🌉</span> Udaan
           </Link>
           <div className="flex items-center gap-4">
-            <NotificationBell userId="emp_1" />
+            <NotificationBell userId={localStorage.getItem("db_user_id") || "emp_1"} />
             <button
               onClick={() => {
                 localStorage.removeItem("db_session");
@@ -109,7 +111,7 @@ export function PortalLayout() {
       <header className="md:hidden sticky top-0 z-30 bg-background/90 backdrop-blur border-b-2 border-border px-4 py-3 flex items-center justify-between">
         <div className="font-black text-primary">🌉</div>
           <div className="flex items-center gap-3">
-            <NotificationBell userId="pwd_candidate_1" />
+            <NotificationBell userId={localStorage.getItem("db_user_id") || "pwd_candidate_1"} />
             <AccessibilityToolbar />
           </div>
       </header>
@@ -118,9 +120,9 @@ export function PortalLayout() {
         aria-label="Main navigation"
         className="hidden md:flex md:flex-col w-64 bg-sidebar border-r-2 border-sidebar-border p-4 sticky top-0 h-screen"
       >
-        <Link to="/app" className="flex items-center gap-2 mb-6 px-2" aria-label="DisabilityBridge home">
+        <Link to="/app" className="flex items-center gap-2 mb-6 px-2" aria-label="Udaan home">
           <span className="text-3xl" aria-hidden>🌉</span>
-          <span className="font-black text-lg leading-tight">Disability<br/>Bridge</span>
+          <span className="font-black text-lg leading-tight">Udaan</span>
         </Link>
         <nav className="flex-1 space-y-1">
           {NAV.map((n) => {
@@ -130,20 +132,20 @@ export function PortalLayout() {
                 key={n.to}
                 to={n.to as any}
                 aria-current={active ? "page" : undefined}
-                aria-label={n.label}
-                onMouseEnter={() => a11y.hoverToSpeak && a11y.speak(n.label, "assistant")}
+                aria-label={t(n.label)}
+                onMouseEnter={() => a11y.hoverToSpeak && a11y.speak(t(n.label), "assistant")}
                 className={`flex items-center gap-3 px-3 py-2 rounded-xl font-semibold transition ${
                   active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "hover:bg-sidebar-accent text-sidebar-foreground"
                 }`}
               >
                 <span className="text-xl" aria-hidden>{n.icon}</span>
-                <span>{n.label}</span>
+                <span>{t(n.label)}</span>
               </Link>
             );
           })}
         </nav>
         <div className="text-xs text-muted-foreground px-2 pt-3">
-          Profile: <span className="font-bold capitalize">{a11y.disability ?? "—"}</span>
+          {t("Profile")}: <span className="font-bold capitalize">{a11y.disability ? t(a11y.disability.charAt(0).toUpperCase() + a11y.disability.slice(1)) : "—"}</span>
         </div>
       </aside>
 
@@ -151,19 +153,19 @@ export function PortalLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b-2 border-border px-4 py-3 flex items-center gap-2">
-          <Link to="/app" className="md:hidden flex items-center gap-2 font-black" aria-label="DisabilityBridge home">
-            <span className="text-2xl" aria-hidden>🌉</span> DB
+          <Link to="/app" className="md:hidden flex items-center gap-2 font-black" aria-label="Udaan home">
+            <span className="text-2xl" aria-hidden>🌉</span> Udaan
           </Link>
           <div className="flex-1" />
           <button
             onClick={toggleMic}
-            aria-label={sr.listening ? "Stop listening" : "Activate voice assistant"}
+            aria-label={sr.listening ? t("Stop listening") : t("Activate voice assistant")}
             aria-pressed={sr.listening}
             className={`flex items-center gap-2 rounded-full px-4 py-2 font-bold border-2 transition ${
               sr.listening ? "bg-sos text-sos-foreground border-sos animate-pulse-ring" : "bg-card border-primary hover:bg-primary hover:text-primary-foreground"
             }`}
           >
-            🎤 {sr.listening ? "Listening…" : "Voice"}
+            🎤 {sr.listening ? t("Listening…") : t("Voice")}
           </button>
           
           <button
@@ -177,9 +179,9 @@ export function PortalLayout() {
               a11y.wheelchairMode ? "bg-accent text-accent-foreground border-accent" : "bg-card border-accent hover:bg-accent hover:text-accent-foreground"
             }`}
           >
-            ♿ {a11y.wheelchairMode ? "Voice On" : "Voice Off"}
+            ♿ {a11y.wheelchairMode ? t("Voice On") : t("Voice Off")}
           </button>
-          <NotificationBell userId="pwd_candidate_1" />
+          <NotificationBell userId={localStorage.getItem("db_user_id") || "pwd_candidate_1"} />
           <AccessibilityToolbar />
         </header>
 
@@ -198,13 +200,13 @@ export function PortalLayout() {
               <Link
                 key={n.to}
                 to={n.to as any}
-                aria-label={n.label}
+                aria-label={t(n.label)}
                 aria-current={active ? "page" : undefined}
-                onMouseEnter={() => a11y.hoverToSpeak && a11y.speak(n.label, "assistant")}
+                onMouseEnter={() => a11y.hoverToSpeak && a11y.speak(t(n.label), "assistant")}
                 className={`flex flex-col items-center justify-center py-2 ${active ? "text-primary font-bold" : "text-muted-foreground"}`}
               >
                 <span className="text-xl" aria-hidden>{n.icon}</span>
-                <span className="leading-none mt-0.5">{n.label.split(" ")[0]}</span>
+                <span className="leading-none mt-0.5">{t(n.label).split(" ")[0]}</span>
               </Link>
             );
           })}

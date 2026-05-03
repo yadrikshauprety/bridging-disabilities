@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/community")({
-  head: () => ({ meta: [{ title: "Community — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Community — Udaan" }] }),
   component: CommunityPage,
 });
 
@@ -395,7 +395,7 @@ function CommunityPage() {
                           
                           <button 
                             onClick={() => {
-                              const shareText = `${post.text} — via DisabilityBridge`;
+                              const shareText = `${post.text} — via Udaan`;
                               if (navigator.share) navigator.share({ text: shareText });
                               else {
                                 navigator.clipboard.writeText(shareText);

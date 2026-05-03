@@ -2,7 +2,7 @@ export async function searchPlaces(query) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=10`;
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'DisabilityBridge/1.0 (contact@disabilitybridge.org)' // Nominatim requires a valid user agent
+      'User-Agent': 'Udaan/1.0 (contact@udaan.org)' // Nominatim requires a valid user agent
     }
   });
 
@@ -25,7 +25,7 @@ export async function getPlaceDetails(osmId) {
   const url = `https://nominatim.openstreetmap.org/details?place_id=${encodeURIComponent(osmId)}&format=json`;
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'DisabilityBridge/1.0 (contact@disabilitybridge.org)'
+      'User-Agent': 'Udaan/1.0 (contact@udaan.org)'
     }
   });
 

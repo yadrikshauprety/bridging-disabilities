@@ -84,11 +84,15 @@ function AgencyPortal() {
     const signer = await provider.getSigner();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-    // Check if Aadhaar is already registered
-    const existingUDID = await contract.getUDID(aadhar);
-    if (existingUDID && existingUDID !== "") {
-      console.log("Aadhaar already registered on blockchain:", existingUDID);
-      return "ALREADY_REGISTERED";
+    // Check if Aadhaar is already registered (resilient check)
+    try {
+      const existingUDID = await contract.getUDID(aadhar);
+      if (existingUDID && existingUDID !== "") {
+        console.log("Aadhaar already registered on blockchain:", existingUDID);
+        return "ALREADY_REGISTERED";
+      }
+    } catch (readErr) {
+      console.warn("Read check failed, proceeding to transaction:", readErr);
     }
 
     a11y.speak("Please sign the transaction to record this UDID on the blockchain.", "assistant");
@@ -102,9 +106,23 @@ function AgencyPortal() {
       // If generating card, we must record on blockchain first
       if (nextStatus === "Card Generated") {
         if (!walletAddress) {
-          setError("Please connect your wallet first!");
-          return;
+          a11y.speak("Connecting your authorized government wallet.", "assistant");
+          await connectWallet();
+          // After attempting connection, check again
+          const currentProvider = (window as any).ethereum;
+          if (!currentProvider) {
+            setError("MetaMask not found. Please install it to use blockchain features.");
+            return;
+          }
+          const provider = new ethers.BrowserProvider(currentProvider);
+          const accounts = await provider.send("eth_requestAccounts", []);
+          if (!accounts[0]) {
+            setError("Please connect your wallet to proceed with blockchain card generation.");
+            return;
+          }
+          setWalletAddress(accounts[0]);
         }
+        
         if (!aadhar) {
           setError("Aadhaar number not found for this application!");
           return;

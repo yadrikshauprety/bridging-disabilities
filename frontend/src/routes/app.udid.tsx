@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { UDIDWizard } from "@/components/udid-wizard";
 
 export const Route = createFileRoute("/app/udid")({
-  head: () => ({ meta: [{ title: "UDID Navigator — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "UDID Navigator — Udaan" }] }),
   component: UDIDPage,
 });
 

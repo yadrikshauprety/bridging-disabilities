@@ -32,7 +32,7 @@ router.post("/", async (req, res) => {
   }
 
   const id = `job_${Date.now()}`;
-  const empId = employerId || "emp_1";
+  const empId = (employerId || "emp_1").toLowerCase();
   const qStr = JSON.stringify(questions || []);
 
   try {

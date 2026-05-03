@@ -8,7 +8,7 @@ import { GraffitiBackdrop } from "@/components/graffiti-backdrop";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "DisabilityBridge — Your Accessibility Companion" },
+      { title: "Udaan — Your Accessibility Companion" },
       { name: "description", content: "A safe, guided digital companion for Persons with Disabilities in India. Voice-first, caption-first, ISL-friendly." },
     ],
   }),
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/")({
 });
 
 const NARRATION = [
-  "Welcome to DisabilityBridge.",
+  "Welcome to Udaan.",
   "A safe, guided companion built for you.",
   "Whether you cannot see, cannot hear, or move differently — this app adapts to you.",
   "Tap Start with Assistance to begin.",
@@ -73,7 +73,7 @@ function Landing() {
       <div className="relative">
       <header className="px-4 md:px-10 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2 font-black text-xl">
-          <span aria-hidden className="text-3xl">🌉</span> DisabilityBridge
+          <span aria-hidden className="text-3xl">🌉</span> Udaan
         </div>
         <div className="flex items-center gap-2">
           <Link

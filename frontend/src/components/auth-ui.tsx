@@ -6,7 +6,7 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
     <div className="min-h-screen grid md:grid-cols-2 bg-background">
       <div className="hidden md:flex flex-col justify-between p-10 bg-gradient-to-br from-primary via-primary-glow to-accent text-primary-foreground">
         <Link to="/" className="font-black text-2xl flex items-center gap-2" aria-label="Back to home">
-          <span aria-hidden className="text-3xl">🌉</span> DisabilityBridge
+          <span aria-hidden className="text-3xl">🌉</span> Udaan
         </Link>
         <div>
           <p className="text-3xl md:text-5xl font-black leading-tight">

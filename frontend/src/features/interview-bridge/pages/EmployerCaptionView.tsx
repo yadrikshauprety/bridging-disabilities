@@ -115,7 +115,7 @@ export function EmployerCaptionView({ sessionId }: { sessionId: string }) {
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Translation Active</span>
         </div>
         <div className="text-[10px] font-bold text-slate-500 uppercase">
-          DisabilityBridge — Real-time ISL Engine
+          Udaan — Real-time ISL Engine
         </div>
       </footer>
     </div>

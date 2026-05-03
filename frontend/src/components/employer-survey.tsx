@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { AUDIT_QUESTIONS } from "@/lib/survey-questions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
 interface SurveyModalProps {
@@ -35,41 +34,57 @@ export function SurveyModal({ open, onOpenChange, onComplete }: SurveyModalProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl">
-        <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] p-8 text-white">
-          <DialogHeader className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">Inclusion Audit</span>
-              <span className="text-[10px] font-black text-white/50">{currentStep + 1} / {AUDIT_QUESTIONS.length}</span>
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border border-border shadow-xl">
+        <div className="bg-white p-8">
+          <DialogHeader className="mb-6">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Inclusion Audit</span>
+              <span className="text-[10px] font-bold text-muted-foreground">{currentStep + 1} / {AUDIT_QUESTIONS.length}</span>
             </div>
-            <DialogTitle className="text-2xl font-black tracking-tight leading-tight">
+            <DialogTitle className="text-xl font-black">
               {currentQuestion.category} Accessibility
             </DialogTitle>
-            <Progress value={progress} className="h-1.5 bg-white/10 mt-4" />
+            <div className="h-1.5 bg-muted rounded-full mt-4 overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </DialogHeader>
 
-          <div className="min-h-[120px] flex items-center">
-            <p className="text-xl font-bold leading-relaxed text-slate-200 italic">
-              "{currentQuestion.q}"
+          <div className="py-6 border-y border-border/50">
+            <p className="text-lg font-bold text-gray-800 leading-snug">
+              {currentQuestion.q}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-12">
+          <div className="flex flex-col gap-3 mt-6">
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                onClick={() => handleAnswer(true)}
+                className="py-6 rounded-xl bg-primary text-primary-foreground font-bold hover:opacity-90"
+              >
+                YES
+              </Button>
+              <Button 
+                onClick={() => handleAnswer(false)}
+                variant="outline"
+                className="py-6 rounded-xl border-2 border-border font-bold hover:bg-muted"
+              >
+                NO
+              </Button>
+            </div>
+            
             <Button 
-              onClick={() => handleAnswer(true)}
-              className="py-8 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-black text-lg shadow-lg hover:scale-[1.02] transition-transform"
+              variant="ghost" 
+              onClick={() => onOpenChange(false)}
+              className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary"
             >
-              YES
-            </Button>
-            <Button 
-              onClick={() => handleAnswer(false)}
-              className="py-8 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-black text-lg shadow-lg hover:scale-[1.02] transition-transform"
-            >
-              NO
+              Skip for now
             </Button>
           </div>
           
-          <p className="text-center text-[10px] font-bold text-white/30 uppercase tracking-widest mt-8">
+          <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-4">
             Please answer truthfully for compliance tracking
           </p>
         </div>

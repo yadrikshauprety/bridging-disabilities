@@ -5,9 +5,10 @@ import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { CaptionBar, LiveCaptionsPanel } from "@/components/captions";
 import { ISLPanel } from "@/components/isl-panel";
 import { GraffitiBackdrop } from "@/components/graffiti-backdrop";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/onboarding")({
-  head: () => ({ meta: [{ title: "Onboarding — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Onboarding — Udaan" }] }),
   component: Onboarding,
 });
 
@@ -22,10 +23,11 @@ const LANGUAGES = ["English", "Hindi", "Tamil", "Telugu", "Kannada", "Bengali", 
 
 function Onboarding() {
   const a11y = useA11y();
+  const t = useT();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [voiceMode, setVoiceMode] = useState(false);
-  const sr = useSpeechRecognition({ lang: "en-IN" });
+  const sr = useSpeechRecognition({ lang: a11y.language === "Hindi" ? "hi-IN" : "en-IN" });
 
   // When user picks Visual → activate voice mode and ask via audio
   useEffect(() => {
@@ -90,12 +92,12 @@ function Onboarding() {
   }
 
   function listenForLocation() {
-    a11y.speak("Please say your city or village.", "assistant");
+    a11y.speak(t("Please say your city or village."), "assistant");
     sr.start((res) => setLocation(res.transcript));
   }
 
   function listenForLanguage() {
-    a11y.speak("Please say your language: English, Hindi, Tamil, Telugu, Kannada, Bengali, or Marathi.", "assistant");
+    a11y.speak(t("Please say your language: English, Hindi, Tamil, Telugu, Kannada, Bengali, or Marathi."), "assistant");
     sr.start((res) => {
       const match = LANGUAGES.find((l) => res.transcript.toLowerCase().includes(l.toLowerCase()));
       pickLanguage(match || "English");
@@ -103,7 +105,7 @@ function Onboarding() {
   }
 
   function listenForDisability() {
-    a11y.speak("Please say your disability: visual, hearing, locomotor, or other.", "assistant");
+    a11y.speak(t("Please say your disability: visual, hearing, locomotor, or other."), "assistant");
     sr.start((res) => {
       const t = res.transcript.toLowerCase();
       const match: DisabilityType =
@@ -120,18 +122,18 @@ function Onboarding() {
       {step === 0 && <GraffitiBackdrop />}
       <div className="relative max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-4">
-          <Link to="/" aria-label="Back to landing page" className="inline-flex items-center gap-2 font-bold text-sm hover:text-primary">
-            ← <span aria-hidden>🌉</span> DisabilityBridge home
+          <Link to="/" aria-label={t("Back to landing page")} className="inline-flex items-center gap-2 font-bold text-sm hover:text-primary">
+            ← <span aria-hidden>🌉</span> {t("Udaan home")}
           </Link>
         </div>
-        <ol aria-label="Onboarding progress" className="flex gap-2 mb-8">
+        <ol aria-label={t("Onboarding progress")} className="flex gap-2 mb-8">
           {["Disability", "Language", "Location"].map((label, i) => (
             <li key={label} className="flex-1">
               <div
                 className={`h-2 rounded-full ${i <= step ? "bg-primary" : "bg-muted"}`}
                 aria-current={i === step ? "step" : undefined}
               />
-              <div className="text-xs mt-1 font-bold">{label}</div>
+              <div className="text-xs mt-1 font-bold">{t(label)}</div>
             </li>
           ))}
         </ol>
@@ -139,20 +141,19 @@ function Onboarding() {
         <div className="bg-card rounded-3xl border-2 border-border p-6 md:p-10 shadow-soft">
           {step === 0 && (
             <>
-              <h1 className="text-3xl md:text-4xl font-black mb-2">Tell us about you</h1>
-              <p className="text-muted-foreground mb-6">We'll adapt the entire app to your needs. You can change this later.</p>
+              <h1 className="text-3xl md:text-4xl font-black mb-2">{t("Tell us about you")}</h1>
+              <p className="text-muted-foreground mb-6">{t("We'll adapt the entire app to your needs. You can change this later.")}</p>
 
               <div className="grid sm:grid-cols-2 gap-3 mb-4">
                 {DISABILITIES.map((d) => (
                   <button
                     key={d.id}
                     onClick={() => pickDisability(d.id)}
-                    aria-label={`Select ${d.label}. ${d.desc}`}
+                    aria-label={`${t("Select")} ${t(d.label)}`}
                     className="text-left rounded-2xl border-2 border-border bg-background p-5 hover:border-primary hover:bg-primary/5 transition"
                   >
                     <div className="text-4xl mb-2" aria-hidden>{d.icon}</div>
-                    <div className="font-bold text-lg">{d.label}</div>
-                    <div className="text-sm text-muted-foreground mt-1">{d.desc}</div>
+                    <div className="font-bold text-lg">{t(d.label)}</div>
                   </button>
                 ))}
               </div>
@@ -160,10 +161,10 @@ function Onboarding() {
               {sr.supported && (
                 <button
                   onClick={listenForDisability}
-                  aria-label="Use voice to choose disability"
+                  aria-label={t("Or speak your answer")}
                   className="w-full rounded-xl border-2 border-accent bg-accent/30 py-3 font-bold mt-2"
                 >
-                  🎤 {sr.listening ? "Listening…" : "Or speak your answer"}
+                  🎤 {sr.listening ? t("Listening…") : t("Or speak your answer")}
                 </button>
               )}
             </>
@@ -171,14 +172,14 @@ function Onboarding() {
 
           {step === 1 && (
             <>
-              <h1 className="text-3xl md:text-4xl font-black mb-2">Choose your language</h1>
-              <p className="text-muted-foreground mb-6">We will speak and write in this language.</p>
+              <h1 className="text-3xl md:text-4xl font-black mb-2">{t("Choose your language")}</h1>
+              <p className="text-muted-foreground mb-6">{t("We will speak and write in this language.")}</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {LANGUAGES.map((l) => (
                   <button
                     key={l}
                     onClick={() => pickLanguage(l)}
-                    aria-label={`Select ${l}`}
+                    aria-label={`${t("Select")} ${l}`}
                     className={`rounded-xl border-2 py-4 font-bold ${a11y.language === l ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary"}`}
                   >
                     {l}
@@ -188,10 +189,10 @@ function Onboarding() {
               {sr.supported && (
                 <button
                   onClick={listenForLanguage}
-                  aria-label="Speak your language"
+                  aria-label={t("Or speak your language")}
                   className="w-full rounded-xl border-2 border-accent bg-accent/30 py-3 font-bold mt-4"
                 >
-                  🎤 {sr.listening ? "Listening…" : "Or speak your language"}
+                  🎤 {sr.listening ? t("Listening…") : t("Or speak your language")}
                 </button>
               )}
             </>
@@ -199,8 +200,8 @@ function Onboarding() {
 
           {step === 2 && (
             <>
-              <h1 className="text-3xl md:text-4xl font-black mb-2">Where are you?</h1>
-              <p className="text-muted-foreground mb-6">We use this for nearby maps, jobs, and schemes.</p>
+              <h1 className="text-3xl md:text-4xl font-black mb-2">{t("Where are you?")}</h1>
+              <p className="text-muted-foreground mb-6">{t("We use this for nearby maps, jobs, and schemes.")}</p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -209,13 +210,13 @@ function Onboarding() {
                 }}
                 className="space-y-4"
               >
-                <label htmlFor="loc" className="font-bold">Your city or village</label>
+                <label htmlFor="loc" className="font-bold">{t("Your city or village")}</label>
                 <input
                   id="loc"
                   name="loc"
                   defaultValue={a11y.location}
                   required
-                  aria-label="City or village"
+                  aria-label={t("Your city or village")}
                   className="w-full rounded-xl border-2 border-border bg-background px-4 py-4 text-lg"
                   placeholder="e.g. Pune, Jaipur, Hubballi"
                 />
@@ -223,15 +224,15 @@ function Onboarding() {
                   <button
                     type="submit"
                     className="flex-1 rounded-xl bg-primary text-primary-foreground font-black py-4"
-                    aria-label="Continue to sign in"
+                    aria-label={t("Continue →")}
                   >
-                    Continue →
+                    {t("Continue →")}
                   </button>
                   {sr.supported && (
                     <button
                       type="button"
                       onClick={listenForLocation}
-                      aria-label="Speak your location"
+                      aria-label={t("Or speak your answer")}
                       className="rounded-xl border-2 border-accent bg-accent/30 px-5 font-bold"
                     >
                       🎤

@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { useA11y } from "@/lib/accessibility-context";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { matchVoiceCommand, VOICE_EXAMPLES } from "@/lib/voice-router";
-import { supabase } from "@/features/interview-bridge/lib/supabase";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/app/")({
-  head: () => ({ meta: [{ title: "Home — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Home — Udaan" }] }),
   component: Home,
 });
 
@@ -15,45 +15,13 @@ interface Session { id: string; employer_id: string; job_title: string; status: 
 
 function Home() {
   const a11y = useA11y();
+  const t = useT();
   const navigate = useNavigate();
   const sr = useSpeechRecognition();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [lastReply, setLastReply] = useState<string>("");
   const [showHistory, setShowHistory] = useState(false);
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loadingSessions, setLoadingSessions] = useState(true);
 
-  useEffect(() => {
-    async function fetchSessions() {
-      try {
-        const { data, error } = await supabase
-          .from("interview_sessions")
-          .select("*")
-          .eq("status", "pending")
-          .order("created_at", { ascending: false });
-        
-        if (error) throw error;
-        setSessions(data || []);
-      } catch (err) {
-        console.error("Failed to fetch interview sessions:", err);
-      } finally {
-        setLoadingSessions(false);
-      }
-    }
-
-    fetchSessions();
-    
-    // Subscribe to new invites
-    const channel = supabase
-      .channel("interview_invites")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "interview_sessions" }, (payload) => {
-        setSessions(prev => [payload.new as Session, ...prev]);
-        a11y.speak("You have a new Round 2 interview invitation!", "assistant");
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, []);
 
   function runCommand(cmd: string) {
     const intent = matchVoiceCommand(cmd);
@@ -73,36 +41,6 @@ function Home() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       {/* Interview Invites Notification */}
-      {sessions.length > 0 && (
-        <section className="animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="rounded-3xl border-4 border-blue-600 bg-blue-50 p-6 shadow-lg">
-            <div className="flex items-center gap-4 mb-4">
-              <span className="text-4xl animate-bounce">🚀</span>
-              <div>
-                <h2 className="text-xl font-black text-blue-900 uppercase tracking-tight">Round 2 Invitations!</h2>
-                <p className="text-blue-700 font-bold">Employers want to meet you in the live interview bridge.</p>
-              </div>
-            </div>
-            <div className="grid gap-3">
-              {sessions.map(s => (
-                <div key={s.id} className="bg-white rounded-2xl p-4 border-2 border-blue-200 flex items-center justify-between gap-4 shadow-sm">
-                  <div>
-                    <p className="text-xs font-black text-blue-600 uppercase">Invitation Received</p>
-                    <p className="font-black text-lg">{s.job_title}</p>
-                    <p className="text-sm text-muted-foreground">{new Date(s.created_at).toLocaleString()}</p>
-                  </div>
-                  <button
-                    onClick={() => navigate({ to: `/session/${s.id}/candidate` as any })}
-                    className="bg-blue-600 text-white font-black px-6 py-3 rounded-xl hover:bg-blue-700 transition shadow-md whitespace-nowrap"
-                  >
-                    Join Live Bridge →
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       <section
         aria-label="Live voice command demo"
@@ -110,12 +48,12 @@ function Home() {
       >
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl md:text-3xl font-black">Hi there 👋 Try the voice assistant</h1>
-            <p className="opacity-90 mt-1">Tap the mic and speak — the app navigates for you.</p>
+            <h1 className="text-2xl md:text-3xl font-black">{t("Hi there 👋 Try the voice assistant")}</h1>
+            <p className="opacity-90 mt-1">{t("Tap the mic and speak — the app navigates for you.")}</p>
           </div>
           <button
             onClick={toggleMic}
-            aria-label={sr.listening ? "Stop listening" : "Start voice command"}
+            aria-label={sr.listening ? t("Stop listening") : t("Start voice command")}
             aria-pressed={sr.listening}
             className={`relative h-24 w-24 rounded-full text-3xl font-black border-4 ${
               sr.listening ? "bg-sos border-card animate-pulse-ring" : "bg-card text-primary border-card"
@@ -129,9 +67,9 @@ function Home() {
         </div>
 
         <div className="mt-5 bg-card text-foreground rounded-2xl p-4 border-2 border-card/50">
-          <div className="text-xs font-bold uppercase text-muted-foreground mb-1">Live transcript</div>
+          <div className="text-xs font-bold uppercase text-muted-foreground mb-1">{t("Live transcript")}</div>
           <p className="min-h-[2.5rem] text-lg font-semibold">
-            {sr.interim || sr.transcript || (sr.listening ? "Listening…" : "Tap the mic to begin.")}
+            {sr.interim || sr.transcript || (sr.listening ? t("Listening…") : t("Tap the mic to begin."))}
           </p>
           {lastReply && (
             <div className="mt-2 inline-block rounded-full bg-primary text-primary-foreground px-3 py-1 text-sm font-bold">
@@ -156,10 +94,10 @@ function Home() {
         <button
           onClick={() => setShowHistory((v) => !v)}
           aria-expanded={showHistory}
-          aria-label="Toggle conversation history"
+          aria-label={t("Toggle conversation history")}
           className="mt-4 text-sm font-bold underline"
         >
-          {showHistory ? "Hide" : "Show"} conversation history ({turns.length})
+          {showHistory ? t("Hide") : t("Show")} {t("conversation history")} ({turns.length})
         </button>
         {showHistory && (
           <ul className="mt-3 space-y-2 text-sm bg-card text-foreground rounded-2xl p-3 max-h-48 overflow-y-auto">
@@ -187,12 +125,12 @@ function Home() {
           <Link
             key={c.to}
             to={c.to as any}
-            aria-label={`${c.title}: ${c.desc}`}
+            aria-label={`${t(c.title)}: ${t(c.desc)}`}
             className="rounded-2xl border-2 border-border bg-card p-5 hover:border-primary hover:shadow-soft transition group"
           >
             <div className="text-4xl mb-2" aria-hidden>{c.icon}</div>
-            <div className="font-bold text-lg group-hover:text-primary">{c.title}</div>
-            <div className="text-sm text-muted-foreground mt-1">{c.desc}</div>
+            <div className="font-bold text-lg group-hover:text-primary">{t(c.title)}</div>
+            <div className="text-sm text-muted-foreground mt-1">{t(c.desc)}</div>
           </Link>
         ))}
       </section>

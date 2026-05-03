@@ -3,7 +3,7 @@ import * as React from "react";
 import { useA11y } from "@/lib/accessibility-context";
 
 export const Route = createFileRoute("/app/profile")({
-  head: () => ({ meta: [{ title: "KYC Profile — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "KYC Profile — Udaan" }] }),
   component: ProfilePage,
 });
 
@@ -31,7 +31,7 @@ function ProfilePage() {
     e.preventDefault();
     if (!email) return;
     setSaving(true);
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
     const updates = {
       name: formData.get("name"),
       aadhar: formData.get("aadhar"),

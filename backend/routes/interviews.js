@@ -12,15 +12,21 @@ router.post("/", async (req, res) => {
   }
 
   const id = `int_${Date.now()}`;
-  const cId = candidateId || "pwd_candidate";
-  const eId = employerId || "emp_1";
-  const tStr = JSON.stringify(transcript);
+  const cId = (candidateId || "pwd_candidate_1").toLowerCase();
+  const eId = (employerId || "emp_1").toLowerCase();
+  const tStr = JSON.stringify(transcript || []);
 
   try {
     const db = await getDb();
     await db.run(
       "INSERT INTO interviews (id, jobId, candidateId, employerId, transcript) VALUES (?, ?, ?, ?, ?)",
       [id, jobId, cId, eId, tStr]
+    );
+
+    // Also create initial candidate review record
+    await db.run(
+      "INSERT OR IGNORE INTO candidate_reviews (interviewId, employerId, status) VALUES (?, ?, 'applied')",
+      [id, eId]
     );
 
     res.status(201).json({ id, success: true });
@@ -34,15 +40,20 @@ router.post("/", async (req, res) => {
 router.get("/employer/:employerId", async (req, res) => {
   try {
     const db = await getDb();
+    const empId = req.params.employerId;
+    console.log(`[GET /interviews/employer/${empId}] Fetching for ${empId}`);
+    
     // Join with jobs to get the job title
     const interviews = await db.all(`
       SELECT i.*, j.title as jobTitle, cr.status as decisionStatus
       FROM interviews i 
       JOIN jobs j ON i.jobId = j.id 
       LEFT JOIN candidate_reviews cr ON cr.interviewId = i.id
-      WHERE i.employerId = ?
+      WHERE LOWER(i.employerId) = LOWER(?)
       ORDER BY i.timestamp DESC
-    `, [req.params.employerId]);
+    `, [empId]);
+
+    console.log(`[GET /interviews/employer/${empId}] Found ${interviews.length} interviews`);
     
     const formatted = interviews.map(i => ({
       ...i,

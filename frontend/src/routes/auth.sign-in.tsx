@@ -4,7 +4,7 @@ import { useA11y } from "@/lib/accessibility-context";
 import { AuthShell, Field } from "@/components/auth-ui";
 
 export const Route = createFileRoute("/auth/sign-in")({
-  head: () => ({ meta: [{ title: "Sign In — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Sign In — Udaan" }] }),
   component: SignIn,
 });
 
@@ -42,7 +42,8 @@ function SignIn() {
           a11y.speak("Signed in. Welcome back.", "assistant");
           navigate({ to: "/app/jobs" });
         } else {
-          navigate({ to: "/app/employer" });
+          a11y.speak("Signed in as employer. Opening dashboard.", "assistant");
+          navigate({ to: "/employer" });
         }
       } else {
         alert(data.error || "Login failed");

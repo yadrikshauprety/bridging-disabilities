@@ -5,11 +5,11 @@ import { CaptionBar, LiveCaptionsPanel } from "@/components/captions";
 import { ISLPanel } from "@/components/isl-panel";
 
 export const Route = createFileRoute("/consent")({
-  head: () => ({ meta: [{ title: "Consent — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Consent — Udaan" }] }),
   component: Consent,
 });
 
-const TERMS = `DisabilityBridge is a free companion app for Persons with Disabilities in India.
+const TERMS = `Udaan is a free companion app for Persons with Disabilities in India.
 
 By using this app, you agree:
 1. We store your disability type, language, and location only on your device, to personalise the app.

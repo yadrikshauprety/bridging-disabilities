@@ -117,6 +117,15 @@ export async function getDb() {
       FOREIGN KEY (interviewId) REFERENCES interviews (id)
     );
 
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      senderId TEXT NOT NULL,
+      receiverId TEXT NOT NULL,
+      content TEXT NOT NULL,
+      type TEXT DEFAULT 'text',
+      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS community_posts (
       id TEXT PRIMARY KEY,
       userId TEXT NOT NULL,

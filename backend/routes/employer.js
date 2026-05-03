@@ -45,7 +45,7 @@ router.get("/company-info/:employerId", async (req, res) => {
   try {
     const db = await getDb();
     const info = await db.get(
-      `SELECT employerId, totalEmployees, pwdEmployees, updatedAt FROM employer_info WHERE employerId = ?`,
+      `SELECT employerId, totalEmployees, pwdEmployees, updatedAt FROM employer_info WHERE LOWER(employerId) = LOWER(?)`,
       [employerId]
     );
 
@@ -99,7 +99,7 @@ router.get("/dei/:employerId", async (req, res) => {
 
     // Fetch company info
     const companyInfo = await db.get(
-      `SELECT totalEmployees, pwdEmployees FROM employer_info WHERE employerId = ?`,
+      `SELECT totalEmployees, pwdEmployees FROM employer_info WHERE LOWER(employerId) = LOWER(?)`,
       [employerId]
     );
     const totalEmployees = companyInfo?.totalEmployees || 0;
@@ -111,13 +111,13 @@ router.get("/dei/:employerId", async (req, res) => {
        FROM interviews i
        JOIN jobs j ON i.jobId = j.id
        LEFT JOIN candidate_reviews cr ON cr.interviewId = i.id
-       WHERE i.employerId = ?`,
+       WHERE LOWER(i.employerId) = LOWER(?)`,
       [employerId]
     );
 
     // Fetch audits
     const audits = await db.all(
-      `SELECT id, employerId, answers, yesCount, score, createdAt FROM employer_audits WHERE employerId = ? ORDER BY createdAt ASC`,
+      `SELECT id, employerId, answers, yesCount, score, createdAt FROM employer_audits WHERE LOWER(employerId) = LOWER(?) ORDER BY createdAt ASC`,
       [employerId]
     );
     console.log("Audits count:", audits?.length);

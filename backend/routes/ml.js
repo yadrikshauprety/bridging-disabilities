@@ -26,7 +26,7 @@ router.post("/sos", async (req, res) => {
     const toFormatted = `whatsapp:${target}`;
     
     const message = await client.messages.create({
-      body: `🚨 EMERGENCY SOS from DisabilityBridge User ${userId || "Unknown"}\nLocation: ${location || "Not shared"}\nStatus: PWD candidate requires immediate assistance.`,
+      body: `🚨 EMERGENCY SOS from Udaan User ${userId || "Unknown"}\nLocation: ${location || "Not shared"}\nStatus: PWD candidate requires immediate assistance.`,
       from: TWILIO_WHATSAPP_NUMBER,
       to: toFormatted
     });

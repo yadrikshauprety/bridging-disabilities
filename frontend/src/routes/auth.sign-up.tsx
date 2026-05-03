@@ -4,7 +4,7 @@ import { useA11y } from "@/lib/accessibility-context";
 import { AuthShell, Field } from "@/components/auth-ui";
 
 export const Route = createFileRoute("/auth/sign-up")({
-  head: () => ({ meta: [{ title: "Sign Up — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Sign Up — Udaan" }] }),
   component: SignUp,
 });
 

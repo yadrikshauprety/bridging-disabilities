@@ -2,14 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import * as React from "react";
 import { useA11y } from "@/lib/accessibility-context";
 import { QRCodeSVG } from "qrcode.react";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/app/wallet")({
-  head: () => ({ meta: [{ title: "Digital Wallet — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Digital Wallet — Udaan" }] }),
   component: DigitalWalletPage,
 });
 
 function DigitalWalletPage() {
   const a11y = useA11y();
+  const t = useT();
   const [appData, setAppData] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [tapping, setTapping] = React.useState(false);
@@ -73,15 +75,15 @@ function DigitalWalletPage() {
     return (
       <div className="max-w-2xl mx-auto space-y-8 text-center py-20">
         <div className="text-8xl mb-6">🪪</div>
-        <h1 className="text-4xl font-black tracking-tight">Digital Wallet</h1>
+        <h1 className="text-4xl font-black tracking-tight">{t("Digital Wallet")}</h1>
         <p className="text-muted-foreground text-xl">
-          You don't have an active UDID application. Apply for your Unique Disability ID to unlock your digital wallet.
+          {t("You don't have an active UDID application. Apply for your Unique Disability ID to unlock your digital wallet.")}
         </p>
         <Link 
           to="/app/udid"
           className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition"
         >
-          Go to UDID Navigator
+          {t("Go to UDID Navigator")}
         </Link>
       </div>
     );
@@ -94,16 +96,16 @@ function DigitalWalletPage() {
     return (
       <div className="max-w-2xl mx-auto space-y-8 text-center py-20">
         <div className="text-8xl mb-6 opacity-50">⏳</div>
-        <h1 className="text-4xl font-black tracking-tight">Card Pending</h1>
+        <h1 className="text-4xl font-black tracking-tight">{t("Card Pending")}</h1>
         <p className="text-muted-foreground text-xl font-medium">
-          Your UDID application is currently: <strong className="text-primary">{appData.status}</strong>.
+          {t("Your UDID application is currently:")} <strong className="text-primary">{appData.status}</strong>.
         </p>
         <p className="text-sm font-bold text-muted-foreground">
-          Once approved by the Government, your digital identity card will appear here automatically.
+          {t("Once approved by the Government, your digital identity card will appear here automatically.")}
         </p>
         <div className="p-6 bg-muted rounded-3xl border-2 border-border mt-8 text-left relative overflow-hidden">
            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
-          <p className="font-bold text-xs text-muted-foreground mb-1 uppercase tracking-widest">Application Reference</p>
+          <p className="font-bold text-xs text-muted-foreground mb-1 uppercase tracking-widest">{t("Application Reference")}</p>
           <p className="font-black text-2xl text-primary">{appData.id}</p>
         </div>
       </div>
@@ -114,8 +116,8 @@ function DigitalWalletPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-10 pb-32 animate-in fade-in slide-in-from-bottom-6 duration-700">
       <header>
-        <h1 className="text-4xl font-black tracking-tight">🪪 Digital Wallet</h1>
-        <p className="text-muted-foreground mt-1 text-lg font-medium">Present this card for concessions or use NFC tap at government counters.</p>
+        <h1 className="text-4xl font-black tracking-tight">🪪 {t("Digital Wallet")}</h1>
+        <p className="text-muted-foreground mt-1 text-lg font-medium">{t("Present this card for concessions or use NFC tap at government counters.")}</p>
       </header>
 
       {/* The ID Card */}
@@ -142,17 +144,17 @@ function DigitalWalletPage() {
             
             <div className="space-y-6">
               <div>
-                <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">Cardholder Name</p>
+                <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">{t("Cardholder Name")}</p>
                 <p className="text-3xl font-black drop-shadow-sm tracking-tight">{appData.name}</p>
               </div>
               
               <div className="grid grid-cols-2 gap-8">
                 <div>
-                  <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">Disability Type</p>
-                  <p className="text-lg font-bold">{appData.disabilityType}</p>
+                  <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">{t("Disability Type")}</p>
+                  <p className="text-lg font-bold">{t(appData.disabilityType)}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">UDID Number</p>
+                  <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">{t("UDID Number")}</p>
                   <p className="text-lg font-black font-mono tracking-tighter">{appData.id}</p>
                 </div>
               </div>
@@ -170,7 +172,7 @@ function DigitalWalletPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-card rounded-[2rem] border-2 border-border p-8 shadow-soft">
           <h3 className="font-black text-xl mb-6 flex items-center gap-2">
-            <span className="text-2xl">⚡</span> Quick Concessions
+            <span className="text-2xl">⚡</span> {t("Quick Concessions")}
           </h3>
           <div className="grid grid-cols-2 gap-4">
             {[
@@ -181,7 +183,7 @@ function DigitalWalletPage() {
             ].map(btn => (
               <button key={btn.label} className="flex flex-col items-center justify-center p-5 bg-muted/50 hover:bg-primary/10 hover:text-primary rounded-2xl border-2 border-transparent hover:border-primary/20 transition-all duration-300 group">
                 <span className="text-3xl mb-2 group-hover:scale-125 transition-transform">{btn.icon}</span>
-                <span className="font-black text-xs uppercase tracking-widest">{btn.label}</span>
+                <span className="font-black text-xs uppercase tracking-widest">{t(btn.label)}</span>
               </button>
             ))}
           </div>
@@ -195,20 +197,20 @@ function DigitalWalletPage() {
               <div className="w-20 h-20 bg-success text-success-foreground rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-lg shadow-success/30">
                 ✓
               </div>
-              <h3 className="font-black text-xl text-success-foreground mb-1">Identity Verified</h3>
+              <h3 className="font-black text-xl text-success-foreground mb-1">{t("Identity Verified")}</h3>
               <p className="text-[10px] font-mono font-black text-muted-foreground bg-muted px-4 py-1 rounded-full uppercase tracking-tighter">{receipt}</p>
               <button 
                 onClick={() => setReceipt(null)}
                 className="mt-6 text-sm font-black text-primary hover:underline uppercase tracking-widest"
               >
-                Tap again
+                {t("Tap again")}
               </button>
             </div>
           ) : (
             <>
               <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-3xl mb-4">📶</div>
-              <h3 className="font-black text-xl mb-3">Govt Desk Handshake</h3>
-              <p className="text-sm text-muted-foreground font-bold mb-8 leading-relaxed px-4">Hold your device near the NFC reader at government counters to verify your identity.</p>
+              <h3 className="font-black text-xl mb-3">{t("Govt Desk Handshake")}</h3>
+              <p className="text-sm text-muted-foreground font-bold mb-8 leading-relaxed px-4">{t("Hold your device near the NFC reader at government counters to verify your identity.")}</p>
               
               <button 
                 onClick={simulateNFCTap}
@@ -219,7 +221,7 @@ function DigitalWalletPage() {
                     : "bg-primary text-primary-foreground hover:scale-[1.03] hover:shadow-primary/20"
                 }`}
               >
-                {tapping ? "Establishing Secure Connection..." : "TAP TO VERIFY"}
+                {tapping ? t("Establishing Secure Connection...") : t("TAP TO VERIFY")}
                 {tapping && (
                   <span className="absolute inset-0 rounded-2xl border-4 border-primary animate-ping opacity-20"></span>
                 )}

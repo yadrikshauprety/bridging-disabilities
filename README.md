@@ -1,109 +1,113 @@
-# 🌉 DisabilityBridge
+# 🌉 Udaan: Bridging the Accessibility Gap
 
-### An Accessibility-First Job Interview Platform for Persons with Disabilities in India
+### *India's First Integrated Ecosystem for PwD Employment, Welfare, and Advocacy*
 
-*Voice on hover · Sign Language interviews · AI Government Schemes · SOS Alerts · **Blockchain UDID Ledger***
+Udaan is not just a portal; it is a holistic infrastructure designed to empower the 2.68 crore Persons with Disabilities in India. By integrating AI, Blockchain, and real-time accessibility tools, we solve the fragmentation of information and the lack of verified inclusive opportunities.
 
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org)
-[![React](https://img.shields.io/badge/React-19-61DAFB.svg)](https://react.dev)
-[![Solidity](https://img.shields.io/badge/Solidity-0.8-363636.svg)](https://soliditylang.org)
-[![MetaMask](https://img.shields.io/badge/MetaMask-Wallet-f6851b.svg)](https://metamask.io)
+---
+
+## 🌟 The Udaan Advantage: 12 Unique Features
+*No single Indian platform currently offers this comprehensive suite of accessibility tools.*
+
+### 🛠️ For Candidates (PwDs)
+
+**F1: Crowdsourced Accessibility Map — India's First**
+- Community-rated reviews of restaurants, hospitals, and transit hubs on 5 parameters (Ramp/Lift, Accessible Toilet, Braille Signage, Audio Announcements, and Parking).
+- Integrated with Google Maps API for wheelchair-accessible routing.
+
+**F4: UDID Application Navigator with Status Tracker**
+- A 12-language guided wizard that pre-fills forms using Aadhaar data and identifies the exact medical authority for your district.
+- Real-time status tracking via automated portal polling.
+
+**F5: Scheme Entitlement Engine — "What am I owed?"**
+- AI-driven matching based on UDID band (White/Yellow/Red), state, and disability type. 
+- Aggregates benefits from DEPwD, MSJE, and all 28 state departments in one place.
+
+**F8: Emergency SOS — Location Broadcast**
+- One-tap GPS broadcast to 3 pre-saved contacts and the nearest DDRC (District Disability Rehabilitation Centre).
+- Automatically generates timestamped incident reports for RPwD Act grievances.
+
+**F9: Voice-First Interface (Multilingual)**
+- 100% operable by voice in Hindi, Kannada, Tamil, Telugu, Bengali, and Marathi.
+- Meets WCAG 2.1 AA and IS 17802 standards, making the platform legally compliant by design.
+
+**F10: Disability Card Digital Wallet**
+- Secure, DigiLocker-style digital storage of UDID and railway concession cards.
+- Future-ready for NFC-tap verification at government counters.
+
+**F11: Community Forum — Peer-to-Peer Knowledge**
+- A moderated network for sharing local "accessibility hacks" and job tips.
+- Expert moderation by certified social workers from NGOs like Enable India.
+
+---
+
+### 🏢 For Employers & HR Teams
+
+**F2: RPwD Compliance Checker for Employers**
+- A 20-question data-driven checklist that generates an instant compliance score and gap report.
+- Passing companies earn the **"DisabilityBridge Verified"** badge for their job listings.
+
+**F6: Accessible Job Portal with Verified Filters**
+- Job listings include real accessibility scores: wheelchair access, ISL interpreter availability, and WFH flexibility.
+- Candidates filter by their specific disability type to find *genuinely* accessible roles.
+
+**F7: Real-Time Auto-Captioning for Video Interviews**
+- A browser-based tool that deaf candidates use during live calls (Google Meet/Zoom).
+- transcribes speech to text in real-time with zero app downloads required.
+
+**F12: Employer DEI Dashboard — B2B Analytics**
+- HR-facing SaaS dashboard to track PwD hiring % against the 3% mandate.
+- Benchmark your company’s inclusion progress against industry peers.
+
+---
+
+### 🌐 For the Ecosystem
+
+**F3: AI-Powered ISL Translation Widget**
+- A floating web widget that converts page text into an **ISL Avatar** performing signs in real-time.
+- Bridges the gap for 18 million deaf Indians served by only 250 certified interpreters.
+
+---
+
+## 🏗️ Technical Architecture
+
+- **Frontend**: React (Vite), TanStack Router, Tailwind CSS, Lucide Icons.
+- **Backend**: Node.js (Express), SQLite (Local State), Supabase (Real-time Bridge).
+- **Blockchain**: Solidity, Hardhat, Ethers.js (UDID Ledger).
+- **AI/ML**: MediaPipe (Gesture Recognition), Groq Llama 3 (RAG & NLP).
+- **Voice**: Web Speech API (Multilingual Recognition).
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### 1. Prerequisites
+- **Node.js** (v18+)
+- **MetaMask Extension** (Connected to `Localhost 8545`)
+- **Supabase Account** (For Real-time Bridge features)
+- **Twilio Sandbox** (For WhatsApp SOS & Notifications)
 
-- **Node.js** (v18 or higher)
-- **MetaMask Extension** (for blockchain registration)
-- **Twilio Account** (for SOS WhatsApp alerts)
-- **Groq API Key** (for AI-powered OCR and transcription)
-
-### 1. Clone and Install
-
+### 2. Installation
 ```bash
-# Clone the repository
 git clone https://github.com/YOUR_USERNAME/bridging-disabilities.git
-cd bridging-disabilities
-
-# Install all Node.js dependencies
-npm install
-cd frontend && npm install
-cd ../backend && npm install
-cd ../blockchain && npm install
+cd bridging-disabilities && npm install
 ```
 
-### 2. Blockchain Setup (Hardhat)
-
-The project uses a local Ethereum blockchain for UDID verification.
-
+### 3. Blockchain Setup
 ```bash
-# 1. Start the local node (Terminal 1)
-cd blockchain
-npx hardhat node
+# Terminal 1
+cd blockchain && npx hardhat node
 
-# 2. Deploy the smart contract (Terminal 2)
-cd blockchain
-npx hardhat run scripts/deploy.js --network localhost
-```
-
-**MetaMask Configuration:**
-- Network: `Localhost 8545`
-- Chain ID: `31337`
-- Currency: `ETH`
-- Import Private Key: `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` (First Hardhat account)
-
-### 3. Environment Configuration
-
-Create `.env` files in both `frontend` and `backend` directories.
-
-#### **Backend (`backend/.env`)**
-```env
-GROQ_API_KEY=your_groq_key_here
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=your_token_here
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
-```
-
-> [!IMPORTANT]
-> **Twilio Sandbox**: To receive messages, you MUST send `join <your-sandbox-code>` to the Twilio WhatsApp number from your phone.
-
-#### **Frontend (`frontend/.env`)**
-```env
-VITE_GROQ_API_KEY=your_groq_key_here
+# Terminal 2
+cd blockchain && npx hardhat run scripts/deploy.js --network localhost
 ```
 
 ### 4. Run the Platform
-
-From the **root directory**, run:
-
 ```bash
 npm run dev
 ```
 
 ---
 
-## ⛓️ Blockchain UDID Ecosystem
-
-DisabilityBridge ensures immutable verification of disability certificates.
-
-1.  **PwD Portal**: Users upload their Aadhaar/UDID card. AI (Groq Vision) extracts identity data automatically.
-2.  **Agency Portal (`/agency`)**: Government evaluators review applications. Clicking **"Generate Card"** records a unique Aadhaar-to-UDID mapping on the Ethereum blockchain via MetaMask.
-3.  **Verification Portal (`/verify`)**: A public-facing ledger explorer where employers or hospitals can verify a UDID's authenticity instantly.
-
----
-
-## ♿ Key Features
-
-- **Voice-on-Hover**: Interactive accessibility engine for visually impaired users.
-- **Sign Language interviews**: MediaPipe-powered gesture recognition.
-- **AI Scheme Search**: Intelligent government scheme discovery.
-- **Blockchain Ledger**: Anti-fraud UDID certificate verification.
-- **Unified Notifications**: Robust WhatsApp engine for SOS alerts and UDID status updates (powered by Twilio).
-
----
-
 ## ⚖ License
-
-[MIT](LICENSE) © 2026 DisabilityBridge Team
+MIT © 2026 Udaan Team

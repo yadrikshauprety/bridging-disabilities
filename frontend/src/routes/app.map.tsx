@@ -2,13 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import React, { useMemo, useState, useEffect, Suspense } from "react";
 import { useA11y } from "@/lib/accessibility-context";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
-import { API_URL } from "@/lib/api"; // Let's make sure this exists or define it
 
 // Dynamically import the map component so it only runs in the browser
 const ClientMap = React.lazy(() => import('@/components/ClientMap'));
 
 export const Route = createFileRoute("/app/map")({
-  head: () => ({ meta: [{ title: "Accessibility Map — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Accessibility Map — Udaan" }] }),
   component: MapPage,
 });
 

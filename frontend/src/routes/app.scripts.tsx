@@ -5,7 +5,7 @@ import { toBraille, BRAILLE_LETTERS } from "@/lib/braille";
 import { SIGN_PHRASES } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/app/scripts")({
-  head: () => ({ meta: [{ title: "Sign & Braille — DisabilityBridge" }] }),
+  head: () => ({ meta: [{ title: "Sign & Braille — Udaan" }] }),
   component: ScriptsPage,
 });
 
