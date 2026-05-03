@@ -105,14 +105,12 @@ router.get("/dei/:employerId", async (req, res) => {
     const totalEmployees = companyInfo?.totalEmployees || 0;
     const currentPwdEmployees = companyInfo?.pwdEmployees || 0;
 
-    // Fetch interviews and decisions
+    // Fetch interviews and decisions (Global View)
     const interviews = await db.all(
-      `SELECT i.id, i.candidateId, i.jobId, i.employerId, i.timestamp, j.title as jobTitle, cr.status as decisionStatus
+      `SELECT i.id, i.candidateId, i.jobId, i.employerId, i.timestamp, COALESCE(j.title, 'Position: ' || i.jobId) as jobTitle, cr.status as decisionStatus
        FROM interviews i
-       JOIN jobs j ON i.jobId = j.id
-       LEFT JOIN candidate_reviews cr ON cr.interviewId = i.id
-       WHERE LOWER(i.employerId) = LOWER(?)`,
-      [employerId]
+       LEFT JOIN jobs j ON i.jobId = j.id
+       LEFT JOIN candidate_reviews cr ON cr.interviewId = i.id`
     );
 
     // Fetch audits

@@ -119,10 +119,13 @@ function CommunityPage() {
     e.preventDefault();
     if (!composeText.trim() || !composeTag) return;
     
+    // Get real user name from localStorage if available
+    const storedName = localStorage.getItem("db_user_name") || "Anonymous";
+    
     const newPost = {
       id: "p" + Date.now().toString() + Math.random().toString(36).substring(2, 7),
-      userName: composeName.trim() || t("Anonymous"),
-      userId: "user_" + Math.random().toString(36).substring(2, 7), // Mocking user ID
+      userName: storedName,
+      userId: localStorage.getItem("db_user_id") || "anonymous",
       text: composeText.trim(),
       tag: composeTag as Category,
       isMod: role === "moderator" ? 1 : 0,

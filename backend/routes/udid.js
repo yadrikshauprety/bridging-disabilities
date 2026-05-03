@@ -238,7 +238,15 @@ router.post("/simulate-status/:id", async (req, res) => {
     const app = await db.get("SELECT * FROM udid_applications WHERE id = ?", [id]);
     if (!app) return res.status(404).json({ error: "Not found" });
 
-    await db.run("UPDATE udid_applications SET status = ?, timestamp = CURRENT_TIMESTAMP WHERE id = ?", [nextStatus, id]);
+    const { blockchainTx } = req.body;
+    if (blockchainTx) {
+      await db.run(
+        "UPDATE udid_applications SET status = ?, blockchainTx = ?, timestamp = CURRENT_TIMESTAMP WHERE id = ?", 
+        [nextStatus, blockchainTx, id]
+      );
+    } else {
+      await db.run("UPDATE udid_applications SET status = ?, timestamp = CURRENT_TIMESTAMP WHERE id = ?", [nextStatus, id]);
+    }
     
     // Notify via WhatsApp
     let msg = `Update for UDID ${id}: Your application status is now *${nextStatus}*.`;

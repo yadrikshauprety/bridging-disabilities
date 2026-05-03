@@ -43,15 +43,14 @@ router.get("/employer/:employerId", async (req, res) => {
     const empId = req.params.employerId;
     console.log(`[GET /interviews/employer/${empId}] Fetching for ${empId}`);
     
-    // Join with jobs to get the job title
+    // Join with jobs to get the job title (Fetching ALL for Global View)
     const interviews = await db.all(`
-      SELECT i.*, j.title as jobTitle, cr.status as decisionStatus
+      SELECT i.*, COALESCE(j.title, 'Position: ' || i.jobId) as jobTitle, cr.status as decisionStatus
       FROM interviews i 
-      JOIN jobs j ON i.jobId = j.id 
+      LEFT JOIN jobs j ON i.jobId = j.id 
       LEFT JOIN candidate_reviews cr ON cr.interviewId = i.id
-      WHERE LOWER(i.employerId) = LOWER(?)
       ORDER BY i.timestamp DESC
-    `, [empId]);
+    `);
 
     console.log(`[GET /interviews/employer/${empId}] Found ${interviews.length} interviews`);
     

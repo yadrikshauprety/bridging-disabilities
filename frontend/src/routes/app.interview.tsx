@@ -308,7 +308,10 @@ function InterviewPage() {
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
     const jobId=params.get("jobId");
-    if(!jobId) return;
+    if(!jobId) {
+      setError("Warning: No Job ID found in URL. This interview will be recorded as a general application.");
+      return;
+    }
     fetch(`/api/jobs/${jobId}`)
       .then(r=>r.ok?r.json():null)
       .then(job=>{

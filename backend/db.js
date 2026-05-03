@@ -149,6 +149,7 @@ export async function getDb() {
 
   // Migrations for existing columns
   try { await db.run("ALTER TABLE udid_applications ADD COLUMN aadhar TEXT"); } catch (e) {}
+  try { await db.run("ALTER TABLE udid_applications ADD COLUMN blockchainTx TEXT"); } catch (e) {}
   try { await db.run("ALTER TABLE employer_info ADD COLUMN totalEmployees INTEGER DEFAULT 0"); } catch (e) {}
   try { await db.run("ALTER TABLE employer_info ADD COLUMN pwdEmployees INTEGER DEFAULT 0"); } catch (e) {}
   try { await db.run("ALTER TABLE employer_info ADD COLUMN updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP"); } catch (e) {}

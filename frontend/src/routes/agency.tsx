@@ -7,7 +7,8 @@ const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const CONTRACT_ABI = [
   "function registerUDID(string memory aadhar, string memory udid) public",
   "function getUDID(string memory aadhar) public view returns (string memory)",
-  "function isUDIDRegistered(string memory udid) public view returns (bool)"
+  "function isUDIDRegistered(string memory udid) public view returns (bool)",
+  "function governmentAgency() public view returns (address)"
 ];
 
 export const Route = createFileRoute("/agency")({
@@ -25,6 +26,7 @@ function AgencyPortal() {
   const [loading, setLoading] = useState(true);
   const [walletAddress, setWalletAddress] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isBlockchainProcessing, setIsBlockchainProcessing] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -68,41 +70,84 @@ function AgencyPortal() {
     try {
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
-      setWalletAddress(accounts[0]);
-      a11y.speak("Wallet connected successfully.", "assistant");
+      const address = accounts[0];
+      setWalletAddress(address);
+
+      // Verify if this address is the authorized government agency
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      try {
+        const authorizedGov = await contract.governmentAgency();
+        if (address.toLowerCase() !== authorizedGov.toLowerCase()) {
+          setError(`Unauthorized Wallet: Only ${authorizedGov.substring(0, 6)}... can record on blockchain. Please switch account in MetaMask.`);
+          a11y.speak("Unauthorized wallet detected. Please switch to the authorized government account in MetaMask.", "assistant");
+        } else {
+          setError("");
+          a11y.speak("Authorized wallet connected successfully.", "assistant");
+        }
+      } catch (err) {
+        console.warn("Could not verify government agency address, proceeding anyway.");
+      }
     } catch (err) {
       console.error(err);
-      setError("Failed to connect wallet.");
+      setError("Failed to connect wallet. Ensure MetaMask is unlocked.");
     }
     setIsConnecting(false);
   };
 
   const registerOnBlockchain = async (aadhar: string, udid: string) => {
-    if (!(window as any).ethereum) throw new Error("MetaMask not found");
+    if (!(window as any).ethereum) throw new Error("MetaMask not found. Please install MetaMask to record on blockchain.");
     
-    const provider = new ethers.BrowserProvider((window as any).ethereum);
-    const signer = await provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-    // Check if Aadhaar is already registered (resilient check)
+    setIsBlockchainProcessing(true);
     try {
-      const existingUDID = await contract.getUDID(aadhar);
-      if (existingUDID && existingUDID !== "") {
-        console.log("Aadhaar already registered on blockchain:", existingUDID);
-        return "ALREADY_REGISTERED";
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      
+      // Explicitly request accounts to ensure MetaMask pops up if not already active
+      // Wrap in try-catch to handle "already pending" error (-32002)
+      try {
+        await provider.send("eth_requestAccounts", []);
+      } catch (accErr: any) {
+        if (accErr.code === -32002) {
+          console.log("MetaMask request already pending, continuing...");
+        } else {
+          throw accErr;
+        }
       }
-    } catch (readErr) {
-      console.warn("Read check failed, proceeding to transaction:", readErr);
-    }
+      
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-    a11y.speak("Please sign the transaction to record this UDID on the blockchain.", "assistant");
-    const tx = await contract.registerUDID(aadhar, udid);
-    await tx.wait();
-    return tx.hash;
+      // Check if Aadhaar is already registered (resilient check)
+      try {
+        const existingUDID = await contract.getUDID(aadhar);
+        if (existingUDID && existingUDID !== "") {
+          console.log("Aadhaar already registered on blockchain:", existingUDID);
+          setIsBlockchainProcessing(false);
+          return "ALREADY_REGISTERED";
+        }
+      } catch (readErr) {
+        console.warn("Read check failed, proceeding to transaction:", readErr);
+      }
+
+      a11y.speak("Please sign the transaction in your MetaMask wallet to record this UDID on the blockchain.", "assistant");
+      
+      // This call MUST trigger the MetaMask popup
+      const tx = await contract.registerUDID(aadhar, udid);
+      console.log("Transaction submitted:", tx.hash);
+      
+      a11y.speak("Transaction submitted. Waiting for blockchain confirmation...", "assistant");
+      const receipt = await tx.wait();
+      
+      setIsBlockchainProcessing(false);
+      return tx.hash;
+    } catch (err) {
+      setIsBlockchainProcessing(false);
+      throw err;
+    }
   };
 
   const updateStatus = async (id: string, nextStatus: string, aadhar?: string) => {
     try {
+      let txHash = null;
       // If generating card, we must record on blockchain first
       if (nextStatus === "Card Generated") {
         if (!walletAddress) {
@@ -114,13 +159,6 @@ function AgencyPortal() {
             setError("MetaMask not found. Please install it to use blockchain features.");
             return;
           }
-          const provider = new ethers.BrowserProvider(currentProvider);
-          const accounts = await provider.send("eth_requestAccounts", []);
-          if (!accounts[0]) {
-            setError("Please connect your wallet to proceed with blockchain card generation.");
-            return;
-          }
-          setWalletAddress(accounts[0]);
         }
         
         if (!aadhar) {
@@ -129,21 +167,20 @@ function AgencyPortal() {
         }
 
         try {
-          // If Aadhaar is missing, use the UDID (id) as the key on blockchain
-          // This ensures the transaction succeeds even if the user skipped Aadhaar OCR
-          const aadharKey = aadhar || id;
-          const txHash = await registerOnBlockchain(aadharKey, id);
+          const aadharKey = aadhar;
+          const result = await registerOnBlockchain(aadharKey, id);
           
-          if (txHash === "ALREADY_REGISTERED") {
+          if (result === "ALREADY_REGISTERED") {
             console.log("Skipping blockchain write - already exists.");
             a11y.speak("This record is already verified on the blockchain. Proceeding with card generation.", "assistant");
           } else {
+            txHash = result;
             console.log("Blockchain TX Hash:", txHash);
-            a11y.speak(`Blockchain record created! TX: ${txHash.substring(0, 10)}...`, "assistant");
+            a11y.speak(`Blockchain record created successfully!`, "assistant");
           }
         } catch (blockchainErr: any) {
           console.error("Blockchain error:", blockchainErr);
-          setError(`Blockchain Error: ${blockchainErr.reason || blockchainErr.message}`);
+          setError(`Blockchain Error: ${blockchainErr.reason || blockchainErr.message || "User rejected or failed"}`);
           return;
         }
       }
@@ -151,7 +188,7 @@ function AgencyPortal() {
       const res = await fetch(`http://localhost:5000/api/udid/simulate-status/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nextStatus })
+        body: JSON.stringify({ nextStatus, blockchainTx: txHash })
       });
       const data = await res.json();
       if (data.success) {
@@ -222,6 +259,19 @@ function AgencyPortal() {
             </div>
           </div>
         </header>
+
+        {isBlockchainProcessing && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-6 text-center">
+            <div className="bg-card p-10 rounded-3xl border-2 border-primary shadow-2xl max-w-sm w-full animate-in zoom-in-95">
+              <div className="text-5xl mb-4 animate-bounce">⛓️</div>
+              <h2 className="text-2xl font-black text-primary mb-2">Blockchain Processing</h2>
+              <p className="text-muted-foreground font-medium mb-6">Please check your MetaMask wallet to confirm the transaction.</p>
+              <div className="w-full bg-muted h-2 rounded-full overflow-hidden">
+                <div className="bg-primary h-full w-1/2 animate-shimmer"></div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 bg-destructive/10 text-destructive text-sm font-bold p-4 rounded-2xl border-2 border-destructive/20 text-center animate-in fade-in slide-in-from-top-4">
